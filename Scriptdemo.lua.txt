@@ -30,13 +30,20 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
       })
       
 ------ Tab
-     local Tab1o = MakeTab({Name = "Script 99đêm trong rừng"})
+     local Tab1o = MakeTab({Name = "99đêm trong rừng"})
      
 ------- BUTTON
     
     AddButton(Tab1o, {
-     Name = "99 đêm trong rừng",
+     Name = "H4x script",
     Callback = function()
 	 loadstring(game:HttpGet("https://soluna-script.vercel.app/99-Nights-in-the-Forest.lua",true))()
+  end
+  })
+
+AddButton(Tab1o, {
+     Name = "ringta",
+    Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/wefwef127382/99daysloader.github.io/refs/heads/main/ringta.lua"))()
   end
   })
