@@ -3,7 +3,7 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
        local Window = MakeWindow({
          Hub = {
          Title = "khazrobloxviet Roblox",
-         Animation = "Youtube: kha Roblox"
+         Animation = "Youtube:không có"
          },
         Key = {
         KeySystem = false,
@@ -22,7 +22,7 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
 
        MinimizeButton({
        Image = "http://www.roblox.com/asset/?id=83190276951914",
-       Size = {150, 150},
+       Size = {90, 90},
        Color = Color3.fromRGB(10, 10, 10),
        Corner = true,
        Stroke = false,
@@ -31,6 +31,7 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
       
 ------ Tab
      local Tab1o = MakeTab({Name = "99đêm trong rừng"})
+     local Tab2o = MakeTab({Name = "Blox Fruits"})
      
 ------- BUTTON
     
@@ -45,5 +46,12 @@ AddButton(Tab1o, {
      Name = "ringta",
     Callback = function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/wefwef127382/99daysloader.github.io/refs/heads/main/ringta.lua"))()
+  end
+  })
+
+AddButton(Tab2o, {
+     Name = "blue X hub",
+    Callback = function()
+	 loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-BlueX/BlueX-Hub/refs/heads/main/Main.lua"))()
   end
   })
