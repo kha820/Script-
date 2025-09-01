@@ -56,6 +56,12 @@ AddButton(Tab2o, {
 	 loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-BlueX/BlueX-Hub/refs/heads/main/Main.lua"))()
   end
   })
+AddButton(Tab2o, {
+     Name = "khazrobloxviet",
+    Callback = function()
+	 loadstring(game:HttpGet("https://raw.githubusercontent.com/kha820/Script-/refs/heads/main/Khazrobloxviet.lua"))()
+  end
+  })
 
 AddButton(Tab3o, {
      Name = "speed hub",
@@ -63,3 +69,4 @@ AddButton(Tab3o, {
 loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
   end
   })
+
