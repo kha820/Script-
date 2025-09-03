@@ -42,6 +42,12 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
 	 loadstring(game:HttpGet("https://soluna-script.vercel.app/99-Nights-in-the-Forest.lua",true))()
   end
   })
+    AddButton(Tab1o, {
+     Name = "void ware",
+    Callback = function()
+	 loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua", true))()
+  end
+  })
 
 AddButton(Tab1o, {
      Name = "ringta",
