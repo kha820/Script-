@@ -14,8 +14,6 @@
   loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/loader.lua", true))()
 
 ----------------------------------------------------------------------------
-  For support head over to discord.gg/voidware
-----------------------------------------------------------------------------
 ]]
 if not game:IsLoaded() then return end
 local CheatEngineMode = false
