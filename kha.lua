@@ -1,58 +1,50 @@
--- Simple Fly Script
+-- Fly Script bằng Double Jump cho Mobile
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local flying = false
+local jumpCount = 0
 local speed = 50 -- tốc độ bay
 
--- Tạo BodyVelocity để điều khiển chuyển động
+-- BodyVelocity để giữ bay
 local bv = Instance.new("BodyVelocity")
-bv.MaxForce = Vector3.new(0, 0, 0)
-bv.Velocity = Vector3.new(0, 0, 0)
-bv.Parent = humanoidRootPart
+bv.MaxForce = Vector3.new(0,0,0)
+bv.Velocity = Vector3.new(0,0,0)
+bv.Parent = hrp
 
--- Bật/tắt bay bằng phím "F"
-game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
-    if gpe then return end
-    if input.KeyCode == Enum.KeyCode.F then
-        flying = not flying
-        if flying then
-            bv.MaxForce = Vector3.new(4000, 4000, 4000)
-            print("🚀 Fly ON")
-        else
-            bv.MaxForce = Vector3.new(0, 0, 0)
-            print("🛑 Fly OFF")
-        end
-    end
+-- Reset đếm nhảy khi chạm đất
+humanoid.StateChanged:Connect(function(_, state)
+	if state == Enum.HumanoidStateType.Landed then
+		jumpCount = 0
+	end
 end)
 
--- Điều khiển hướng bay theo camera
-game:GetService("RunService").RenderStepped:Connect(function()
-    if flying then
-        local camCF = workspace.CurrentCamera.CFrame
-        local moveDir = Vector3.new()
-        local uis = game:GetService("UserInputService")
+-- Khi nhảy
+UserInputService.JumpRequest:Connect(function()
+	jumpCount += 1
+	if jumpCount == 2 then
+		flying = not flying
+		if flying then
+			bv.MaxForce = Vector3.new(4000,4000,4000)
+			print("🚀 Bay ON")
+		else
+			bv.MaxForce = Vector3.new(0,0,0)
+			print("🛑 Bay OFF")
+		end
+		jumpCount = 0
+	end
+end)
 
-        if uis:IsKeyDown(Enum.KeyCode.W) then
-            moveDir = moveDir + camCF.LookVector
-        end
-        if uis:IsKeyDown(Enum.KeyCode.S) then
-            moveDir = moveDir - camCF.LookVector
-        end
-        if uis:IsKeyDown(Enum.KeyCode.A) then
-            moveDir = moveDir - camCF.RightVector
-        end
-        if uis:IsKeyDown(Enum.KeyCode.D) then
-            moveDir = moveDir + camCF.RightVector
-        end
-        if uis:IsKeyDown(Enum.KeyCode.Space) then
-            moveDir = moveDir + camCF.UpVector
-        end
-        if uis:IsKeyDown(Enum.KeyCode.LeftControl) then
-            moveDir = moveDir - camCF.UpVector
-        end
-
-        bv.Velocity = moveDir * speed
-    end
+-- Di chuyển khi bay (dùng joystick Roblox)
+RunService.RenderStepped:Connect(function()
+	if flying then
+		bv.Velocity = humanoid.MoveDirection * speed
+	else
+		bv.Velocity = Vector3.new(0,0,0)
+	end
 end)
