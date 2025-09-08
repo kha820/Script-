@@ -181,3 +181,20 @@ end)
 local commit = shared.CustomCommit and tostring(shared.CustomCommit) or shared.StagingMode and "staging" or "7b3fad2b46336a55beca73caa205fb49dac41165"
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/"..tostring(commit).."/newnightsintheforest.lua", true))()
+
+task.spawn(function()
+    repeat task.wait() until game:IsLoaded()
+
+    -- Đợi GUI load
+    task.wait(3)
+
+    -- Tìm GUI theo tên
+    local sg = game:GetService("CoreGui"):FindFirstChild("Voidware") -- 👈 tên ScreenGui (có thể khác)
+    if sg then
+        local frame = sg:FindFirstChildOfClass("Frame") -- lấy cái Frame chính
+        if frame then
+            frame.Size = UDim2.new(0, 400, 0, 250) -- 👈 chỉnh size nhỏ lại (400x250)
+            frame.Position = UDim2.new(0.5, -200, 0.5, -125) -- 👈 căn giữa
+        end
+    end
+end)
