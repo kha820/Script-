@@ -1,0 +1,29 @@
+-- Script này chạy trong ServerScriptService
+local workspace = game:GetService("Workspace")
+
+-- Kích thước hitbox mong muốn
+local newHitboxSize = Vector3.new(50, 50, 50) -- điều chỉnh theo ý bạn
+
+-- Hàm tăng hitbox cho một quái
+local function enlargeHitbox(enemy)
+    if enemy:FindFirstChild("HumanoidRootPart") then
+        local hrp = enemy.HumanoidRootPart
+        hrp.Size = newHitboxSize
+        hrp.Transparency = 0.5 -- nhìn thấy hitbox nếu muốn
+        hrp.CanCollide = true
+    end
+end
+
+-- Tăng hitbox cho quái đã có trong workspace
+for _, enemy in pairs(workspace:GetChildren()) do
+    if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
+        enlargeHitbox(enemy)
+    end
+end
+
+-- Tăng hitbox cho quái mới spawn
+workspace.ChildAdded:Connect(function(child)
+    if child:IsA("Model") and child:FindFirstChild("Humanoid") then
+        enlargeHitbox(child)
+    end
+end)
