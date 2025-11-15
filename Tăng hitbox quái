@@ -1,11 +1,17 @@
--- Script này chạy trong ServerScriptService
-local workspace = game:GetService("Workspace")
+-- Chạy trong ServerScriptService
+local Workspace = game:GetService("Workspace")
 
--- Kích thước hitbox mong muốn
-local newHitboxSize = Vector3.new(50, 50, 50) -- điều chỉnh theo ý bạn
+-- Kích thước hitbox mong muốn cho quái
+local newHitboxSize = Vector3.new(10, 10, 10) -- thay số theo ý bạn
 
--- Hàm tăng hitbox cho một quái
-local function enlargeHitbox(enemy)
+-- Hàm kiểm tra xem model có phải quái không
+local function isEnemy(model)
+    -- Giả sử quái được đặt trong folder "Enemies" trong workspace
+    return model:IsDescendantOf(Workspace:WaitForChild("Enemies"))
+end
+
+-- Hàm tăng hitbox cho quái
+local function enlargeEnemyHitbox(enemy)
     if enemy:FindFirstChild("HumanoidRootPart") then
         local hrp = enemy.HumanoidRootPart
         hrp.Size = newHitboxSize
@@ -14,16 +20,16 @@ local function enlargeHitbox(enemy)
     end
 end
 
--- Tăng hitbox cho quái đã có trong workspace
-for _, enemy in pairs(workspace:GetChildren()) do
+-- Tăng hitbox cho quái đã có
+for _, enemy in pairs(Workspace.Enemies:GetChildren()) do
     if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
-        enlargeHitbox(enemy)
+        enlargeEnemyHitbox(enemy)
     end
 end
 
 -- Tăng hitbox cho quái mới spawn
-workspace.ChildAdded:Connect(function(child)
-    if child:IsA("Model") and child:FindFirstChild("Humanoid") then
-        enlargeHitbox(child)
+Workspace.Enemies.ChildAdded:Connect(function(enemy)
+    if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
+        enlargeEnemyHitbox(enemy)
     end
 end)
