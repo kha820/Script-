@@ -1,234 +1,216 @@
 --!strict
+-- FULL ESP WITH GUI + MOBILE SUPPORT
 
+--// SERVICES
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
+--// PLAYER
 local LocalPlayer = Players.LocalPlayer
-if not LocalPlayer then warn("LocalPlayer not found!") return end
+if not LocalPlayer then return end
 
-local ESP_ACTIVE = true -- Trạng thái ESP ban đầu (true: Bật, false: Tắt)
-local TOGGLE_KEY = Enum.KeyCode.RightControl -- Phím tắt để Bật/Tắt ESP
+--// SETTINGS
+local ESP_ACTIVE = true
+local TOGGLE_KEY = Enum.KeyCode.RightControl
 
-local espObjects = {} -- Bảng để lưu trữ các đối tượng ESP đang hoạt động
+--// STORAGE
+type ESPData = {
+	player: Player,
+	character: Model,
+	root: BasePart,
+	humanoid: Humanoid,
+	billboard: BillboardGui,
+	boxStroke: UIStroke,
+	nameLabel: TextLabel,
+	distanceLabel: TextLabel,
+	healthBar: Frame
+}
 
--- Hàm tạo một đối tượng Box ESP cho một người chơi
-local function createPlayerESP(player: Player)
-    -- Không tạo ESP cho chính bản thân người chơi
-    if player == LocalPlayer then return end
+local espObjects: {[Player]: ESPData} = {}
 
-    local function updateESP(character: Model)
-        -- Xóa ESP cũ nếu nhân vật đã có (ví dụ: hồi sinh)
-        local existingEsp = character:FindFirstChild("PlayerESP_Billboard")
-        if existingEsp then
-            existingEsp:Destroy()
-        end
+------------------------------------------------------------
+-- GUI (MOBILE + PC)
+------------------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "ESP_GUI"
+gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 5)
-        local humanoid = character:WaitForChild("Humanoid", 5)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.fromScale(0.25, 0.08)
+toggleBtn.Position = UDim2.fromScale(0.05, 0.85)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.TextScaled = true
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.Text = "ESP: ON"
+toggleBtn.Parent = gui
 
-        if not humanoidRootPart or not humanoid then
-            warn("Failed to find HumanoidRootPart or Humanoid for", player.Name)
-            return
-        end
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 16)
+corner.Parent = toggleBtn
 
-        -- Tạo BillboardGui (phần chính để chứa ESP)
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "PlayerESP_Billboard"
-        billboard.Adornee = humanoidRootPart
-        billboard.AlwaysOnTop = true -- Luôn hiển thị xuyên tường
-        billboard.Size = UDim2.new(4, 0, 5, 0) -- Kích thước cơ bản của Billboard (Width, Height)
-        billboard.StudsOffset = Vector3.new(0, 1.5, 0) -- Đẩy Billboard lên một chút so với gốc nhân vật
-        billboard.Parent = character -- Đặt trong Character để dễ quản lý
+------------------------------------------------------------
+-- CREATE ESP
+------------------------------------------------------------
+local function createESP(player: Player, character: Model)
+	if player == LocalPlayer then return end
 
-        -- Khung Box ESP
-        local boxFrame = Instance.new("Frame")
-        boxFrame.Size = UDim2.new(1, 0, 1, 0)
-        boxFrame.BackgroundTransparency = 1
-        boxFrame.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Màu khung đỏ
-        boxFrame.BorderSizePixel = 2
-        boxFrame.Parent = billboard
+	if espObjects[player] then
+		espObjects[player].billboard:Destroy()
+		espObjects[player] = nil
+	end
 
-        -- UIStroke cho Box Frame (để khung rõ hơn)
-        local boxStroke = Instance.new("UIStroke")
-        boxStroke.Thickness = 2
-        boxStroke.Color = Color3.fromRGB(255, 0, 0)
-        boxStroke.Parent = boxFrame
+	local root = character:WaitForChild("HumanoidRootPart", 5)
+	local humanoid = character:WaitForChild("Humanoid", 5)
+	if not root or not humanoid then return end
 
-        -- Name ESP (Tên người chơi)
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Name = "NameESP"
-        nameLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        nameLabel.Position = UDim2.new(0, 0, -0.25, 0) -- Trên cùng của khung
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- Màu trắng
-        nameLabel.TextStrokeTransparency = 0
-        nameLabel.TextScaled = true
-        nameLabel.Font = Enum.Font.SourceSansBold
-        nameLabel.Text = player.Name
-        nameLabel.Parent = boxFrame
+	-- Billboard
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "ESP"
+	billboard.Adornee = root
+	billboard.AlwaysOnTop = true
+	billboard.StudsOffset = Vector3.new(0, 1.5, 0)
+	billboard.Parent = character
 
-        -- Distance ESP (Khoảng cách) - Tích hợp vào NameLabel
-        local distanceLabel = Instance.new("TextLabel")
-        distanceLabel.Name = "DistanceESP"
-        distanceLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        distanceLabel.Position = UDim2.new(0, 0, 1.05, 0) -- Dưới cùng của khung
-        distanceLabel.BackgroundTransparency = 1
-        distanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        distanceLabel.TextStrokeTransparency = 0
-        distanceLabel.TextScaled = true
-        distanceLabel.Font = Enum.Font.SourceSansBold
-        distanceLabel.Text = "0m"
-        distanceLabel.Parent = boxFrame
+	-- Box
+	local box = Instance.new("Frame")
+	box.Size = UDim2.fromScale(1,1)
+	box.BackgroundTransparency = 1
+	box.Parent = billboard
 
-        -- Health Bar ESP
-        local healthFrame = Instance.new("Frame")
-        healthFrame.Name = "HealthBarESP"
-        healthFrame.Size = UDim2.new(0.15, 0, 1, 0) -- Chiều rộng nhỏ, chiều cao bằng khung
-        healthFrame.Position = UDim2.new(-0.2, 0, 0, 0) -- Đặt bên trái khung
-        healthFrame.BackgroundTransparency = 1
-        healthFrame.Parent = billboard
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 2
+	stroke.Parent = box
 
-        local healthInnerBar = Instance.new("Frame")
-        healthInnerBar.Name = "HealthInnerBar"
-        healthInnerBar.Size = UDim2.new(1, 0, 1, 0)
-        healthInnerBar.Position = UDim2.new(0, 0, 0, 0)
-        healthInnerBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Màu xanh lá cây (mặc định)
-        healthInnerBar.BorderSizePixel = 0
-        healthInnerBar.Parent = healthFrame
+	-- Name
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.fromScale(1, 0.25)
+	nameLabel.Position = UDim2.fromScale(0, -0.3)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.TextScaled = true
+	nameLabel.TextStrokeTransparency = 0
+	nameLabel.Font = Enum.Font.SourceSansBold
+	nameLabel.Text = player.Name
+	nameLabel.Parent = box
 
-        local healthBarStroke = Instance.new("UIStroke")
-        healthBarStroke.Thickness = 1
-        healthBarStroke.Color = Color3.fromRGB(0, 0, 0) -- Viền đen cho thanh máu
-        healthBarStroke.Parent = healthInnerBar
+	-- Distance
+	local distanceLabel = Instance.new("TextLabel")
+	distanceLabel.Size = UDim2.fromScale(1, 0.25)
+	distanceLabel.Position = UDim2.fromScale(0, 1.05)
+	distanceLabel.BackgroundTransparency = 1
+	distanceLabel.TextScaled = true
+	distanceLabel.TextStrokeTransparency = 0
+	distanceLabel.Font = Enum.Font.SourceSansBold
+	distanceLabel.Text = "0m"
+	distanceLabel.Parent = box
 
-        -- Lưu đối tượng ESP vào bảng để quản lý
-        espObjects[player] = {
-            billboard = billboard,
-            boxFrame = boxFrame,
-            nameLabel = nameLabel,
-            distanceLabel = distanceLabel,
-            healthInnerBar = healthInnerBar,
-            humanoid = humanoid,
-            rootPart = humanoidRootPart
-        }
+	-- Health bar
+	local hbBG = Instance.new("Frame")
+	hbBG.Size = UDim2.fromScale(0.12, 1)
+	hbBG.Position = UDim2.fromScale(-0.2, 0)
+	hbBG.BackgroundColor3 = Color3.new(0,0,0)
+	hbBG.Parent = billboard
 
-        -- Cập nhật ESP liên tục
-        local connection
-        connection = game:GetService("RunService").RenderStepped:Connect(function()
-            if not ESP_ACTIVE then
-                billboard.Enabled = false
-                return
-            else
-                billboard.Enabled = true
-            end
+	local hb = Instance.new("Frame")
+	hb.Size = UDim2.fromScale(1,1)
+	hb.BorderSizePixel = 0
+	hb.Parent = hbBG
 
-            if not character or not character.Parent or not LocalPlayer.Character or not LocalPlayer.Character.Parent then
-                -- Nếu nhân vật không còn hoặc LocalPlayer không tồn tại, ngắt kết nối
-                if connection then connection:Disconnect() end
-                espObjects[player] = nil
-                billboard:Destroy()
-                return
-            end
-
-            -- Cập nhật khoảng cách
-            local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if localRoot and humanoidRootPart then
-                local distance = (localRoot.Position - humanoidRootPart.Position).Magnitude
-                distanceLabel.Text = string.format("%.0f m", distance) -- Làm tròn khoảng cách
-            end
-
-            -- Cập nhật thanh máu
-            local currentHealth = humanoid.Health
-            local maxHealth = humanoid.MaxHealth
-            local healthRatio = currentHealth / maxHealth
-
-            healthInnerBar.Size = UDim2.new(1, 0, healthRatio, 0) -- Thay đổi chiều cao thanh máu
-            healthInnerBar.Position = UDim2.new(0, 0, 1 - healthRatio, 0) -- Đẩy thanh máu lên từ dưới
-
-            -- Đổi màu thanh máu theo lượng máu
-            if healthRatio > 0.6 then
-                healthInnerBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Xanh lá (máu đầy)
-            elseif healthRatio > 0.3 then
-                healthInnerBar.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Vàng (máu vừa)
-            else
-                healthInnerBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Đỏ (máu yếu)
-            end
-
-            -- Cập nhật màu Box ESP theo Team (ví dụ: cùng team màu xanh, địch màu đỏ)
-            if player.Team and LocalPlayer.Team and player.Team == LocalPlayer.Team then
-                boxFrame.BorderColor3 = Color3.fromRGB(0, 255, 0) -- Đồng đội màu xanh
-                boxStroke.Color = Color3.fromRGB(0, 255, 0)
-            else
-                boxFrame.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Kẻ địch màu đỏ
-                boxStroke.Color = Color3.fromRGB(255, 0, 0)
-            end
-        end)
-    end
-
-    -- Kết nối khi nhân vật được thêm vào (hồi sinh)
-    player.CharacterAdded:Connect(updateESP)
-    -- Nếu nhân vật đã tồn tại, tạo ESP ngay
-    if player.Character then
-        updateESP(player.Character)
-    end
+	espObjects[player] = {
+		player = player,
+		character = character,
+		root = root,
+		humanoid = humanoid,
+		billboard = billboard,
+		boxStroke = stroke,
+		nameLabel = nameLabel,
+		distanceLabel = distanceLabel,
+		healthBar = hb
+	}
 end
 
--- Chạy ESP cho tất cả người chơi đang có trong server
-for _, player in pairs(Players:GetPlayers()) do
-    task.spawn(createPlayerESP, player) -- Dùng task.spawn để tránh chặn luồng chính
+------------------------------------------------------------
+-- PLAYER HANDLING
+------------------------------------------------------------
+local function onPlayer(player: Player)
+	player.CharacterAdded:Connect(function(char)
+		task.wait(0.2)
+		createESP(player, char)
+	end)
+	if player.Character then
+		createESP(player, player.Character)
+	end
 end
 
--- Lắng nghe sự kiện khi có người chơi mới tham gia
-Players.PlayerAdded:Connect(function(player)
-    task.spawn(createPlayerESP, player)
+for _,p in ipairs(Players:GetPlayers()) do
+	onPlayer(p)
+end
+Players.PlayerAdded:Connect(onPlayer)
+
+Players.PlayerRemoving:Connect(function(p)
+	if espObjects[p] then
+		espObjects[p].billboard:Destroy()
+		espObjects[p] = nil
+	end
 end)
 
--- Lắng nghe sự kiện khi có người chơi rời khỏi (xóa ESP của họ)
-Players.PlayerRemoving:Connect(function(player)
-    if espObjects[player] then
-        if espObjects[player].billboard then
-            espObjects[player].billboard:Destroy()
-        end
-        espObjects[player] = nil
-    end
+------------------------------------------------------------
+-- MAIN LOOP (OPTIMIZED)
+------------------------------------------------------------
+RunService.RenderStepped:Connect(function()
+	local localChar = LocalPlayer.Character
+	local localRoot = localChar and localChar:FindFirstChild("HumanoidRootPart")
+	if not localRoot then return end
+
+	for _,esp in pairs(espObjects) do
+		esp.billboard.Enabled = ESP_ACTIVE
+
+		if not ESP_ACTIVE then continue end
+
+		local distance = (localRoot.Position - esp.root.Position).Magnitude
+		esp.distanceLabel.Text = string.format("%.0f m", distance)
+
+		local scale = math.clamp(50 / distance, 1.5, 4)
+		esp.billboard.Size = UDim2.fromScale(scale, scale * 1.3)
+
+		local maxHp = esp.humanoid.MaxHealth
+		local hpRatio = maxHp > 0 and (esp.humanoid.Health / maxHp) or 0
+		hpRatio = math.clamp(hpRatio, 0, 1)
+
+		esp.healthBar.Size = UDim2.fromScale(1, hpRatio)
+		esp.healthBar.Position = UDim2.fromScale(0, 1 - hpRatio)
+
+		if hpRatio > 0.6 then
+			esp.healthBar.BackgroundColor3 = Color3.fromRGB(0,255,0)
+		elseif hpRatio > 0.3 then
+			esp.healthBar.BackgroundColor3 = Color3.fromRGB(255,255,0)
+		else
+			esp.healthBar.BackgroundColor3 = Color3.fromRGB(255,0,0)
+		end
+
+		if esp.player.Team and LocalPlayer.Team and esp.player.Team == LocalPlayer.Team then
+			esp.boxStroke.Color = Color3.fromRGB(0,255,0)
+		else
+			esp.boxStroke.Color = Color3.fromRGB(255,0,0)
+		end
+	end
 end)
 
--- Xóa tất cả ESP đang tồn tại
-local function disableAllESP()
-    for _, espData in pairs(espObjects) do
-        if espData.billboard then
-            espData.billboard.Enabled = false
-        end
-    end
+------------------------------------------------------------
+-- TOGGLE (GUI + KEYBOARD)
+------------------------------------------------------------
+local function toggleESP()
+	ESP_ACTIVE = not ESP_ACTIVE
+	toggleBtn.Text = ESP_ACTIVE and "ESP: ON" or "ESP: OFF"
 end
 
--- Kích hoạt lại tất cả ESP
-local function enableAllESP()
-    for _, espData in pairs(espObjects) do
-        if espData.billboard then
-            espData.billboard.Enabled = true
-        end
-    end
-end
+toggleBtn.MouseButton1Click:Connect(toggleESP)
 
--- Lắng nghe phím tắt để Bật/Tắt ESP
-UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end -- Bỏ qua nếu là sự kiện hệ thống
-    
-    if input.KeyCode == TOGGLE_KEY then
-        ESP_ACTIVE = not ESP_ACTIVE -- Đảo ngược trạng thái
-        if ESP_ACTIVE then
-            print("ESP Enabled!")
-            enableAllESP()
-        else
-            print("ESP Disabled!")
-            disableAllESP()
-        end
-    end
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.KeyCode == TOGGLE_KEY then
+		toggleESP()
+	end
 end)
-
--- Đảm bảo ESP được bật khi script khởi tạo
-if ESP_ACTIVE then
-    enableAllESP()
-end
