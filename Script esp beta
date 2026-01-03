@@ -1,40 +1,71 @@
--- Chèn script này vào StarterPlayer -> StarterCharacterScripts hoặc thực thi bằng công cụ của bạn
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local function createESP(player)
-    -- Không tạo ESP cho chính bản thân mình
+local function createBoxESP(player)
     if player == LocalPlayer then return end
 
-    local function applyHighlight(character)
-        -- Chờ nhân vật load hoàn tất
-        if not character:FindFirstChild("EspHighlight") then
-            local highlight = Instance.new("Highlight")
-            highlight.Name = "EspHighlight"
-            highlight.Parent = character
-            
-            -- Tùy chỉnh màu sắc
-            highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Màu đỏ bên trong
-            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Viền trắng
-            highlight.FillTransparency = 0.5 -- Độ trong suốt của thân
-            highlight.OutlineTransparency = 0 -- Độ rõ của viền
-            
-            -- Hiệu ứng nhìn xuyên tường quan trọng nhất:
-            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    local function applyESP(character)
+        -- Đợi HumanoidRootPart (phần trung tâm của nhân vật) xuất hiện
+        local rootPart = character:WaitForChild("HumanoidRootPart", 10)
+        if not rootPart then return end
+
+        -- Xóa ESP cũ nếu có
+        if rootPart:FindFirstChild("BoxESP") then
+            rootPart.BoxESP:Destroy()
         end
+
+        -- Tạo BillboardGui để hiển thị trên đầu/xung quanh nhân vật
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "BoxESP"
+        billboard.Adornee = rootPart
+        billboard.AlwaysOnTop = true
+        billboard.Size = UDim2.new(4.5, 0, 6, 0) -- Kích thước khung
+        billboard.Parent = rootPart
+
+        -- Tạo khung (Frame)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundTransparency = 1 -- Làm trong suốt nền
+        frame.BorderSizePixel = 2
+        frame.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Màu khung (Đỏ)
+        frame.Parent = billboard
+
+        -- Thêm UIStroke để làm viền khung sắc nét hơn
+        local stroke = Instance.new("UIStroke")
+        stroke.Thickness = 2
+        stroke.Color = Color3.fromRGB(255, 0, 0)
+        stroke.Parent = frame
+
+        -- Thêm nhãn tên và khoảng cách
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Size = UDim2.new(1, 0, 0.2, 0)
+        nameLabel.Position = UDim2.new(0, 0, -0.25, 0) -- Hiện trên đỉnh khung
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nameLabel.TextStrokeTransparency = 0
+        nameLabel.TextScaled = true
+        nameLabel.Parent = frame
+
+        -- Cập nhật khoảng cách liên tục
+        spawn(function()
+            while character.Parent and rootPart.Parent do
+                local distance = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) 
+                    and (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude or 0
+                
+                nameLabel.Text = player.Name .. " [" .. math.floor(distance) .. "m]"
+                task.wait(0.5) -- Cập nhật mỗi 0.5 giây để tiết kiệm hiệu năng
+            end
+        end)
     end
 
-    -- Áp dụng khi nhân vật hồi sinh
-    player.CharacterAdded:Connect(applyHighlight)
+    player.CharacterAdded:Connect(applyESP)
     if player.Character then
-        applyHighlight(player.Character)
+        applyESP(player.Character)
     end
 end
 
--- Chạy ESP cho những người đang có sẵn trong server
+-- Áp dụng cho người chơi hiện tại và người mới vào
 for _, player in pairs(Players:GetPlayers()) do
-    createESP(player)
+    createBoxESP(player)
 end
-
--- Chạy ESP cho những người mới vào server
-Players.PlayerAdded:Connect(createESP)
+Players.PlayerAdded:Connect(createBoxESP)
