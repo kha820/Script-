@@ -1,0 +1,40 @@
+-- Chèn script này vào StarterPlayer -> StarterCharacterScripts hoặc thực thi bằng công cụ của bạn
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function createESP(player)
+    -- Không tạo ESP cho chính bản thân mình
+    if player == LocalPlayer then return end
+
+    local function applyHighlight(character)
+        -- Chờ nhân vật load hoàn tất
+        if not character:FindFirstChild("EspHighlight") then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "EspHighlight"
+            highlight.Parent = character
+            
+            -- Tùy chỉnh màu sắc
+            highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Màu đỏ bên trong
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Viền trắng
+            highlight.FillTransparency = 0.5 -- Độ trong suốt của thân
+            highlight.OutlineTransparency = 0 -- Độ rõ của viền
+            
+            -- Hiệu ứng nhìn xuyên tường quan trọng nhất:
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        end
+    end
+
+    -- Áp dụng khi nhân vật hồi sinh
+    player.CharacterAdded:Connect(applyHighlight)
+    if player.Character then
+        applyHighlight(player.Character)
+    end
+end
+
+-- Chạy ESP cho những người đang có sẵn trong server
+for _, player in pairs(Players:GetPlayers()) do
+    createESP(player)
+end
+
+-- Chạy ESP cho những người mới vào server
+Players.PlayerAdded:Connect(createESP)
