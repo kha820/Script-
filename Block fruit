@@ -1,0 +1,200 @@
+--[[ 
+    FULL AUTO FARM BLOX FRUITS
+    By ChatGPT
+    Sea 1 / 2 / 3
+]]
+
+repeat wait() until game:IsLoaded()
+
+-- Services
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local plr = Players.LocalPlayer
+
+-- Wait character
+repeat wait() until plr.Character
+local Char = plr.Character
+local Humanoid = Char:WaitForChild("Humanoid")
+local HRP = Char:WaitForChild("HumanoidRootPart")
+
+-- Settings
+getgenv().Settings = {
+    AutoFarm = true,
+    AutoQuest = true,
+    AutoBoss = true,
+    AutoStats = true,
+    AutoBuso = true,
+    AutoKen = true,
+    FastAttack = true,
+    Weapon = "Melee" -- "Melee", "Sword", "Blox Fruit"
+}
+
+-- Anti AFK
+plr.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    wait(1)
+    VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
+
+-- Tween
+function TP(cf)
+    local dist = (HRP.Position - cf.Position).Magnitude
+    local speed = dist / 300
+    local tween = TweenService:Create(HRP, TweenInfo.new(speed, Enum.EasingStyle.Linear), {CFrame = cf})
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+-- Equip Weapon
+function EquipWeapon()
+    for i,v in pairs(plr.Backpack:GetChildren()) do
+        if getgenv().Settings.Weapon == "Melee" and v.ToolTip == "Melee" then
+            Humanoid:EquipTool(v)
+        elseif getgenv().Settings.Weapon == "Sword" and v.ToolTip == "Sword" then
+            Humanoid:EquipTool(v)
+        elseif getgenv().Settings.Weapon == "Blox Fruit" and v.ToolTip == "Blox Fruit" then
+            Humanoid:EquipTool(v)
+        end
+    end
+end
+
+-- Fast Attack
+spawn(function()
+    while wait() do
+        if getgenv().Settings.FastAttack then
+            pcall(function()
+                VirtualUser:Button1Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                VirtualUser:Button1Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            end)
+        end
+    end
+end)
+
+-- Auto Buso
+spawn(function()
+    while wait(5) do
+        if getgenv().Settings.AutoBuso then
+            pcall(function()
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+            end)
+        end
+    end
+end)
+
+-- Auto Ken
+spawn(function()
+    while wait(5) do
+        if getgenv().Settings.AutoKen then
+            pcall(function()
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("Ken", true)
+            end)
+        end
+    end
+end)
+
+-- Auto Stats
+spawn(function()
+    while wait(1) do
+        if getgenv().Settings.AutoStats then
+            pcall(function()
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("AddPoint","Melee",1)
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("AddPoint","Defense",1)
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("AddPoint","Sword",1)
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("AddPoint","Blox Fruit",1)
+            end)
+        end
+    end
+end)
+
+-- Bring Mob
+function BringMob(mob)
+    pcall(function()
+        mob.HumanoidRootPart.Size = Vector3.new(60,60,60)
+        mob.HumanoidRootPart.Transparency = 1
+        mob.HumanoidRootPart.CanCollide = false
+        mob.HumanoidRootPart.CFrame = HRP.CFrame * CFrame.new(0,0,-5)
+        mob.Humanoid:ChangeState(11)
+    end)
+end
+
+-- Auto Farm Mob
+spawn(function()
+    while wait() do
+        if getgenv().Settings.AutoFarm then
+            for i,v in pairs(workspace.Enemies:GetChildren()) do
+                if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                    repeat wait()
+                        EquipWeapon()
+                        TP(v.HumanoidRootPart.CFrame * CFrame.new(0,0,5))
+                        BringMob(v)
+                    until not getgenv().Settings.AutoFarm or v.Humanoid.Health <= 0
+                end
+            end
+        end
+    end
+end)
+
+-- Auto Boss
+spawn(function()
+    while wait(10) do
+        if getgenv().Settings.AutoBoss then
+            for i,v in pairs(workspace.Enemies:GetChildren()) do
+                if string.find(v.Name, "Boss") then
+                    repeat wait()
+                        EquipWeapon()
+                        TP(v.HumanoidRootPart.CFrame * CFrame.new(0,0,8))
+                        BringMob(v)
+                    until v.Humanoid.Health <= 0 or not getgenv().Settings.AutoBoss
+                end
+            end
+        end
+    end
+end)
+
+-- Simple GUI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0,200,0,250)
+Frame.Position = UDim2.new(0,20,0,100)
+Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Frame.Active = true
+Frame.Draggable = true
+
+function CreateButton(text, posY, callback)
+    local btn = Instance.new("TextButton", Frame)
+    btn.Size = UDim2.new(0,180,0,30)
+    btn.Position = UDim2.new(0,10,0,posY)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+CreateButton("Toggle Auto Farm", 10, function()
+    getgenv().Settings.AutoFarm = not getgenv().Settings.AutoFarm
+end)
+
+CreateButton("Toggle Auto Boss", 50, function()
+    getgenv().Settings.AutoBoss = not getgenv().Settings.AutoBoss
+end)
+
+CreateButton("Toggle Auto Stats", 90, function()
+    getgenv().Settings.AutoStats = not getgenv().Settings.AutoStats
+end)
+
+CreateButton("Weapon: Melee", 130, function()
+    getgenv().Settings.Weapon = "Melee"
+end)
+
+CreateButton("Weapon: Sword", 170, function()
+    getgenv().Settings.Weapon = "Sword"
+end)
+
+CreateButton("Weapon: Fruit", 210, function()
+    getgenv().Settings.Weapon = "Blox Fruit"
+end)
+
+print("✅ FULL AUTO FARM BLOX FRUITS LOADED!")
