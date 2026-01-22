@@ -5,7 +5,7 @@ local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 
--- Danh sách class cần DIỆT
+-- Các class effect cần xoá
 local BadClasses = {
     "ParticleEmitter",
     "Trail",
@@ -36,13 +36,50 @@ local function IsBad(obj)
     return false
 end
 
--- Hủy đồ họa
-local function Nuke(obj)
+-- Kiểm tra có phải nhân vật / quái không
+local function IsCharacterModel(obj)
+    if not obj then return false end
+    if obj:IsA("Model") then
+        if obj:FindFirstChildOfClass("Humanoid") then
+            return true
+        end
+    end
+    return false
+end
+
+-- Kiểm tra có nằm trong model nhân vật không
+local function IsInsideCharacter(obj)
+    local p = obj
+    while p do
+        if IsCharacterModel(p) then
+            return true
+        end
+        p = p.Parent
+    end
+    return false
+end
+
+-- Hàm xử lý object
+local function CleanObject(obj)
     pcall(function()
+        -- Nếu là 1 phần của player / NPC / quái → KHÔNG xoá model
+        if IsInsideCharacter(obj) then
+            -- Chỉ xoá EFFECT gắn trên người
+            if IsBad(obj) then
+                obj:Destroy()
+            end
+            return
+        end
+
+        -- Nếu là effect → xoá
         if IsBad(obj) then
             obj:Destroy()
+
+        -- Nếu là mesh trang trí
         elseif obj:IsA("SpecialMesh") then
             obj:Destroy()
+
+        -- Nếu là part map
         elseif obj:IsA("MeshPart") or obj:IsA("UnionOperation") or obj:IsA("Part") then
             obj.Material = Enum.Material.Plastic
             obj.Reflectance = 0
@@ -65,17 +102,10 @@ local function FullClean()
 
     -- Workspace
     for _, v in pairs(Workspace:GetDescendants()) do
-        Nuke(v)
+        CleanObject(v)
     end
 
-    -- Nhân vật
-    if player.Character then
-        for _, v in pairs(player.Character:GetDescendants()) do
-            Nuke(v)
-        end
-    end
-
-    -- Ép quality thấp nhất
+    -- Ép quality thấp
     pcall(function()
         settings().Rendering.QualityLevel = 1
     end)
@@ -85,23 +115,23 @@ end
 
 -- Chạy lần đầu
 FullClean()
-print("✅ UNIVERSAL NO EFFECT MODE ON")
+print("✅ NO EFFECT MODE (KEEP NPC) ON")
 
--- Auto khi respawn
+-- Khi respawn
 player.CharacterAdded:Connect(function()
     task.wait(1)
     FullClean()
 end)
 
--- 🔥 DIỆT REALTIME: bất cứ thứ gì spawn ra là xoá
+-- Diệt effect realtime (nhưng không xoá quái)
 Workspace.DescendantAdded:Connect(function(obj)
-    Nuke(obj)
+    CleanObject(obj)
 end)
 
--- Dọn lại mỗi 5 giây (phòng game spawn ẩn)
+-- Dọn lại định kỳ
 task.spawn(function()
     while true do
-        task.wait(5)
+        task.wait(6)
         pcall(FullClean)
     end
 end)
