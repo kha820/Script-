@@ -5,7 +5,7 @@ local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
--- Giữ map sáng, không tối
+-- Giữ game sáng
 pcall(function()
     Lighting.Brightness = 2
     Lighting.ClockTime = 14
@@ -13,69 +13,86 @@ pcall(function()
     Lighting.GlobalShadows = false
 end)
 
--- Danh sách CHỈ EFFECT cần xoá
+-- Xoá hết effect ánh sáng trong Lighting
+pcall(function()
+    for _, v in pairs(Lighting:GetChildren()) do
+        v:Destroy()
+    end
+end)
+
+-- Các class effect cần xoá
 local EffectClasses = {
-    "ParticleEmitter",
-    "Trail",
-    "Beam",
-    "Fire",
-    "Smoke",
-    "Sparkles",
-    "Explosion",
-    "Highlight",
-    "BlurEffect",
-    "BloomEffect",
-    "SunRaysEffect",
-    "ColorCorrectionEffect",
-    "DepthOfFieldEffect",
-    "Atmosphere",
-    "Clouds"
+    "ParticleEmitter","Trail","Beam","Fire","Smoke","Sparkles","Explosion",
+    "Highlight","BlurEffect","BloomEffect","SunRaysEffect","ColorCorrectionEffect",
+    "DepthOfFieldEffect","Atmosphere","Clouds"
 }
 
 local function IsEffect(obj)
     for _, c in ipairs(EffectClasses) do
-        if obj:IsA(c) then
-            return true
-        end
+        if obj:IsA(c) then return true end
     end
     return false
 end
 
--- Xoá CHỈ effect
-local function Clean(obj)
+-- Hạ chất lượng map + xoá effect
+local function Optimize(obj)
     pcall(function()
+        -- Xoá effect
         if IsEffect(obj) then
             obj:Destroy()
+            return
+        end
+
+        -- Không đụng NPC / Player
+        local p = obj
+        while p do
+            if p:IsA("Model") and p:FindFirstChildOfClass("Humanoid") then
+                return
+            end
+            p = p.Parent
+        end
+
+        -- Hạ chất lượng part map
+        if obj:IsA("Part") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
+            obj.Material = Enum.Material.Plastic
+            obj.Reflectance = 0
+            obj.CastShadow = false
         end
     end)
 end
 
--- Quét toàn map 1 lần
+-- Quét toàn map
 for _, v in pairs(Workspace:GetDescendants()) do
-    Clean(v)
+    Optimize(v)
 end
 
--- Khi có effect mới spawn → xoá ngay
+-- Khi có gì spawn ra → tối ưu ngay
 Workspace.DescendantAdded:Connect(function(obj)
-    Clean(obj)
+    Optimize(obj)
 end)
 
 -- Khi respawn → quét lại
 player.CharacterAdded:Connect(function()
     task.wait(1)
     for _, v in pairs(Workspace:GetDescendants()) do
-        Clean(v)
+        Optimize(v)
     end
 end)
 
 -- Dọn lại định kỳ
 task.spawn(function()
     while true do
-        task.wait(5)
+        task.wait(8)
         for _, v in pairs(Workspace:GetDescendants()) do
-            Clean(v)
+            Optimize(v)
         end
+        collectgarbage("collect")
     end
 end)
 
-print("✅ NO EFFECT MODE ON (KEEP MAP + NPC + PLAYER)")
+-- Ép Roblox về chất lượng thấp nhất
+pcall(function()
+    settings().Rendering.QualityLevel = 1
+end)
+
+print("✅ ULTRA LOW GRAPHICS MODE ON")
