@@ -1,0 +1,54 @@
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local player = Players.LocalPlayer
+
+local function UltraLowMode()
+    -- Lighting
+    pcall(function()
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9e9
+        Lighting.Brightness = 1
+        Lighting.ClockTime = 14
+        for _, v in pairs(Lighting:GetChildren()) do
+            v:Destroy()
+        end
+    end)
+
+    -- Workspace
+    for _, v in pairs(workspace:GetDescendants()) do
+        pcall(function()
+            if v:IsA("Decal") or v:IsA("Texture") then
+                v:Destroy()
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                v.Enabled = false
+            elseif v:IsA("MeshPart") or v:IsA("UnionOperation") or v:IsA("Part") then
+                v.Material = Enum.Material.Plastic
+                v.Reflectance = 0
+            end
+        end)
+    end
+
+    -- Nhân vật
+    if player.Character then
+        for _, v in pairs(player.Character:GetDescendants()) do
+            pcall(function()
+                if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                    v.Enabled = false
+                end
+            end)
+        end
+    end
+
+    print("✅ ULTRA LOW MODE APPLIED")
+end
+
+-- Chạy lần đầu
+UltraLowMode()
+
+-- Tự chạy lại khi respawn
+player.CharacterAdded:Connect(function()
+    task.wait(2)
+    UltraLowMode()
+end)
