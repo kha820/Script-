@@ -5,22 +5,21 @@ local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
--- Giữ game sáng
+-- ====== 1. ÉP ÁNH SÁNG SIÊU NHẸ + KHÔNG TỐI ======
 pcall(function()
     Lighting.Brightness = 2
     Lighting.ClockTime = 14
-    Lighting.FogEnd = 1000000
+    Lighting.FogEnd = 1e9
     Lighting.GlobalShadows = false
-end)
+    Lighting.EnvironmentDiffuseScale = 0
+    Lighting.EnvironmentSpecularScale = 0
 
--- Xoá hết effect ánh sáng trong Lighting
-pcall(function()
     for _, v in pairs(Lighting:GetChildren()) do
         v:Destroy()
     end
 end)
 
--- Các class effect cần xoá
+-- ====== 2. DANH SÁCH EFFECT CẦN XOÁ ======
 local EffectClasses = {
     "ParticleEmitter","Trail","Beam","Fire","Smoke","Sparkles","Explosion",
     "Highlight","BlurEffect","BloomEffect","SunRaysEffect","ColorCorrectionEffect",
@@ -34,7 +33,19 @@ local function IsEffect(obj)
     return false
 end
 
--- Hạ chất lượng map + xoá effect
+-- ====== 3. KIỂM TRA CÓ PHẢI NPC / PLAYER KHÔNG ======
+local function IsInsideCharacter(obj)
+    local p = obj
+    while p do
+        if p:IsA("Model") and p:FindFirstChildOfClass("Humanoid") then
+            return true
+        end
+        p = p.Parent
+    end
+    return false
+end
+
+-- ====== 4. TỐI ƯU TỪNG OBJECT ======
 local function Optimize(obj)
     pcall(function()
         -- Xoá effect
@@ -43,13 +54,9 @@ local function Optimize(obj)
             return
         end
 
-        -- Không đụng NPC / Player
-        local p = obj
-        while p do
-            if p:IsA("Model") and p:FindFirstChildOfClass("Humanoid") then
-                return
-            end
-            p = p.Parent
+        -- Không phá NPC / Player
+        if IsInsideCharacter(obj) then
+            return
         end
 
         -- Hạ chất lượng part map
@@ -58,20 +65,25 @@ local function Optimize(obj)
             obj.Reflectance = 0
             obj.CastShadow = false
         end
+
+        -- Xoá texture / decal trên map (rất nặng)
+        if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance") then
+            obj:Destroy()
+        end
     end)
 end
 
--- Quét toàn map
+-- ====== 5. QUÉT TOÀN MAP ======
 for _, v in pairs(Workspace:GetDescendants()) do
     Optimize(v)
 end
 
--- Khi có gì spawn ra → tối ưu ngay
+-- ====== 6. BẤT CỨ THỨ GÌ SPAWN RA → TỐI ƯU NGAY ======
 Workspace.DescendantAdded:Connect(function(obj)
     Optimize(obj)
 end)
 
--- Khi respawn → quét lại
+-- ====== 7. KHI RESPAWN → QUÉT LẠI ======
 player.CharacterAdded:Connect(function()
     task.wait(1)
     for _, v in pairs(Workspace:GetDescendants()) do
@@ -79,10 +91,10 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
--- Dọn lại định kỳ
+-- ====== 8. DỌN LẠI ĐỊNH KỲ ======
 task.spawn(function()
     while true do
-        task.wait(8)
+        task.wait(10)
         for _, v in pairs(Workspace:GetDescendants()) do
             Optimize(v)
         end
@@ -90,9 +102,9 @@ task.spawn(function()
     end
 end)
 
--- Ép Roblox về chất lượng thấp nhất
+-- ====== 9. ÉP ROBLOX XUỐNG CHẤT LƯỢNG THẤP NHẤT ======
 pcall(function()
     settings().Rendering.QualityLevel = 1
 end)
 
-print("✅ ULTRA LOW GRAPHICS MODE ON")
+print("✅ ULTRA POTATO MODE ENABLED")
