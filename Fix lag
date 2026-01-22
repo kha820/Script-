@@ -3,29 +3,49 @@ repeat task.wait() until game:IsLoaded()
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
-local function UltraLowMode()
-    -- Lighting
+-- Hàm dọn sạch
+local function NukeGraphics()
+    -- Lighting cực thấp
     pcall(function()
         Lighting.GlobalShadows = false
         Lighting.FogEnd = 9e9
         Lighting.Brightness = 1
         Lighting.ClockTime = 14
+        Lighting.ExposureCompensation = 0
+
         for _, v in pairs(Lighting:GetChildren()) do
             v:Destroy()
         end
     end)
 
-    -- Workspace
+    -- Xoá mây
+    pcall(function()
+        if workspace:FindFirstChild("Terrain") and workspace.Terrain:FindFirstChild("Clouds") then
+            workspace.Terrain.Clouds:Destroy()
+        end
+    end)
+
+    -- Dọn workspace
     for _, v in pairs(workspace:GetDescendants()) do
         pcall(function()
-            if v:IsA("Decal") or v:IsA("Texture") then
+            -- Xoá toàn bộ effect / trang trí
+            if v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance")
+            or v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam")
+            or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles")
+            or v:IsA("Explosion") or v:IsA("Highlight") then
                 v:Destroy()
-            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                v.Enabled = false
+
+            -- Xoá mesh đặc biệt (rất nặng)
+            elseif v:IsA("SpecialMesh") then
+                v:Destroy()
+
+            -- Tối giản Part
             elseif v:IsA("MeshPart") or v:IsA("UnionOperation") or v:IsA("Part") then
                 v.Material = Enum.Material.Plastic
                 v.Reflectance = 0
+                v.CastShadow = false
             end
         end)
     end
@@ -34,21 +54,36 @@ local function UltraLowMode()
     if player.Character then
         for _, v in pairs(player.Character:GetDescendants()) do
             pcall(function()
-                if v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v.Enabled = false
+                if v:IsA("Decal") or v:IsA("Texture")
+                or v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") then
+                    v:Destroy()
                 end
             end)
         end
     end
 
-    print("✅ ULTRA LOW MODE APPLIED")
+    -- Ép chất lượng Roblox xuống thấp nhất
+    pcall(function()
+        settings().Rendering.QualityLevel = 1
+    end)
+
+    collectgarbage("collect")
+    print("✅ FULL NUKE GRAPHICS APPLIED")
 end
 
 -- Chạy lần đầu
-UltraLowMode()
+NukeGraphics()
 
 -- Tự chạy lại khi respawn
 player.CharacterAdded:Connect(function()
     task.wait(2)
-    UltraLowMode()
+    NukeGraphics()
+end)
+
+-- Cứ vài giây dọn lại (vì Blox Fruits hay tạo effect mới)
+task.spawn(function()
+    while true do
+        task.wait(10)
+        pcall(NukeGraphics)
+    end
 end)
