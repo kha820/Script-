@@ -2,11 +2,19 @@ repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
-local player = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
 
--- Các class effect cần xoá
-local BadClasses = {
+-- Giữ map sáng, không tối
+pcall(function()
+    Lighting.Brightness = 2
+    Lighting.ClockTime = 14
+    Lighting.FogEnd = 1000000
+    Lighting.GlobalShadows = false
+end)
+
+-- Danh sách CHỈ EFFECT cần xoá
+local EffectClasses = {
     "ParticleEmitter",
     "Trail",
     "Beam",
@@ -15,9 +23,6 @@ local BadClasses = {
     "Sparkles",
     "Explosion",
     "Highlight",
-    "Decal",
-    "Texture",
-    "SurfaceAppearance",
     "BlurEffect",
     "BloomEffect",
     "SunRaysEffect",
@@ -27,8 +32,8 @@ local BadClasses = {
     "Clouds"
 }
 
-local function IsBad(obj)
-    for _, c in ipairs(BadClasses) do
+local function IsEffect(obj)
+    for _, c in ipairs(EffectClasses) do
         if obj:IsA(c) then
             return true
         end
@@ -36,102 +41,41 @@ local function IsBad(obj)
     return false
 end
 
--- Kiểm tra có phải nhân vật / quái không
-local function IsCharacterModel(obj)
-    if not obj then return false end
-    if obj:IsA("Model") then
-        if obj:FindFirstChildOfClass("Humanoid") then
-            return true
-        end
-    end
-    return false
-end
-
--- Kiểm tra có nằm trong model nhân vật không
-local function IsInsideCharacter(obj)
-    local p = obj
-    while p do
-        if IsCharacterModel(p) then
-            return true
-        end
-        p = p.Parent
-    end
-    return false
-end
-
--- Hàm xử lý object
-local function CleanObject(obj)
+-- Xoá CHỈ effect
+local function Clean(obj)
     pcall(function()
-        -- Nếu là 1 phần của player / NPC / quái → KHÔNG xoá model
-        if IsInsideCharacter(obj) then
-            -- Chỉ xoá EFFECT gắn trên người
-            if IsBad(obj) then
-                obj:Destroy()
-            end
-            return
-        end
-
-        -- Nếu là effect → xoá
-        if IsBad(obj) then
+        if IsEffect(obj) then
             obj:Destroy()
-
-        -- Nếu là mesh trang trí
-        elseif obj:IsA("SpecialMesh") then
-            obj:Destroy()
-
-        -- Nếu là part map
-        elseif obj:IsA("MeshPart") or obj:IsA("UnionOperation") or obj:IsA("Part") then
-            obj.Material = Enum.Material.Plastic
-            obj.Reflectance = 0
-            obj.CastShadow = false
         end
     end)
 end
 
--- Dọn toàn map
-local function FullClean()
-    -- Lighting
-    pcall(function()
-        Lighting.GlobalShadows = false
-        Lighting.FogEnd = 9e9
-        Lighting.Brightness = 1
-        for _, v in pairs(Lighting:GetChildren()) do
-            v:Destroy()
-        end
-    end)
-
-    -- Workspace
-    for _, v in pairs(Workspace:GetDescendants()) do
-        CleanObject(v)
-    end
-
-    -- Ép quality thấp
-    pcall(function()
-        settings().Rendering.QualityLevel = 1
-    end)
-
-    collectgarbage("collect")
+-- Quét toàn map 1 lần
+for _, v in pairs(Workspace:GetDescendants()) do
+    Clean(v)
 end
 
--- Chạy lần đầu
-FullClean()
-print("✅ NO EFFECT MODE (KEEP NPC) ON")
-
--- Khi respawn
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    FullClean()
+-- Khi có effect mới spawn → xoá ngay
+Workspace.DescendantAdded:Connect(function(obj)
+    Clean(obj)
 end)
 
--- Diệt effect realtime (nhưng không xoá quái)
-Workspace.DescendantAdded:Connect(function(obj)
-    CleanObject(obj)
+-- Khi respawn → quét lại
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    for _, v in pairs(Workspace:GetDescendants()) do
+        Clean(v)
+    end
 end)
 
 -- Dọn lại định kỳ
 task.spawn(function()
     while true do
-        task.wait(6)
-        pcall(FullClean)
+        task.wait(5)
+        for _, v in pairs(Workspace:GetDescendants()) do
+            Clean(v)
+        end
     end
 end)
+
+print("✅ NO EFFECT MODE ON (KEEP MAP + NPC + PLAYER)")
