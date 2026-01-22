@@ -3,87 +3,105 @@ repeat task.wait() until game:IsLoaded()
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
-local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
--- Hàm dọn sạch
-local function NukeGraphics()
-    -- Lighting cực thấp
+-- Danh sách class cần DIỆT
+local BadClasses = {
+    "ParticleEmitter",
+    "Trail",
+    "Beam",
+    "Fire",
+    "Smoke",
+    "Sparkles",
+    "Explosion",
+    "Highlight",
+    "Decal",
+    "Texture",
+    "SurfaceAppearance",
+    "BlurEffect",
+    "BloomEffect",
+    "SunRaysEffect",
+    "ColorCorrectionEffect",
+    "DepthOfFieldEffect",
+    "Atmosphere",
+    "Clouds"
+}
+
+local function IsBad(obj)
+    for _, c in ipairs(BadClasses) do
+        if obj:IsA(c) then
+            return true
+        end
+    end
+    return false
+end
+
+-- Hủy đồ họa
+local function Nuke(obj)
+    pcall(function()
+        if IsBad(obj) then
+            obj:Destroy()
+        elseif obj:IsA("SpecialMesh") then
+            obj:Destroy()
+        elseif obj:IsA("MeshPart") or obj:IsA("UnionOperation") or obj:IsA("Part") then
+            obj.Material = Enum.Material.Plastic
+            obj.Reflectance = 0
+            obj.CastShadow = false
+        end
+    end)
+end
+
+-- Dọn toàn map
+local function FullClean()
+    -- Lighting
     pcall(function()
         Lighting.GlobalShadows = false
         Lighting.FogEnd = 9e9
         Lighting.Brightness = 1
-        Lighting.ClockTime = 14
-        Lighting.ExposureCompensation = 0
-
         for _, v in pairs(Lighting:GetChildren()) do
             v:Destroy()
         end
     end)
 
-    -- Xoá mây
-    pcall(function()
-        if workspace:FindFirstChild("Terrain") and workspace.Terrain:FindFirstChild("Clouds") then
-            workspace.Terrain.Clouds:Destroy()
-        end
-    end)
-
-    -- Dọn workspace
-    for _, v in pairs(workspace:GetDescendants()) do
-        pcall(function()
-            -- Xoá toàn bộ effect / trang trí
-            if v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance")
-            or v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam")
-            or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles")
-            or v:IsA("Explosion") or v:IsA("Highlight") then
-                v:Destroy()
-
-            -- Xoá mesh đặc biệt (rất nặng)
-            elseif v:IsA("SpecialMesh") then
-                v:Destroy()
-
-            -- Tối giản Part
-            elseif v:IsA("MeshPart") or v:IsA("UnionOperation") or v:IsA("Part") then
-                v.Material = Enum.Material.Plastic
-                v.Reflectance = 0
-                v.CastShadow = false
-            end
-        end)
+    -- Workspace
+    for _, v in pairs(Workspace:GetDescendants()) do
+        Nuke(v)
     end
 
     -- Nhân vật
     if player.Character then
         for _, v in pairs(player.Character:GetDescendants()) do
-            pcall(function()
-                if v:IsA("Decal") or v:IsA("Texture")
-                or v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") then
-                    v:Destroy()
-                end
-            end)
+            Nuke(v)
         end
     end
 
-    -- Ép chất lượng Roblox xuống thấp nhất
+    -- Ép quality thấp nhất
     pcall(function()
         settings().Rendering.QualityLevel = 1
     end)
 
     collectgarbage("collect")
-    print("✅ FULL NUKE GRAPHICS APPLIED")
 end
 
 -- Chạy lần đầu
-NukeGraphics()
+FullClean()
+print("✅ UNIVERSAL NO EFFECT MODE ON")
 
--- Tự chạy lại khi respawn
+-- Auto khi respawn
 player.CharacterAdded:Connect(function()
-    task.wait(2)
-    NukeGraphics()
+    task.wait(1)
+    FullClean()
 end)
 
--- Cứ vài giây dọn lại (vì Blox Fruits hay tạo effect mới)
+-- 🔥 DIỆT REALTIME: bất cứ thứ gì spawn ra là xoá
+Workspace.DescendantAdded:Connect(function(obj)
+    Nuke(obj)
+end)
+
+-- Dọn lại mỗi 5 giây (phòng game spawn ẩn)
 task.spawn(function()
     while true do
-        task.wait(10)
-        pcall(NukeGraphics)
+        task.wait(5)
+        pcall(FullClean)
     end
 end)
