@@ -1,5 +1,5 @@
 -- ROBLOX FIX LAG / BOOST FPS
--- By ChatGPT
+-- By kha
 
 local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
