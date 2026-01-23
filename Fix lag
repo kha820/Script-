@@ -1,5 +1,4 @@
--- ABSOLUTE MAX FPS / POTATO MODE
--- DESTROY EVERYTHING THAT CAUSES LAG
+-- ULTRA FPS BOOST (SAFE EXTREME)
 -- By Kha
 
 repeat task.wait() until game:IsLoaded()
@@ -10,26 +9,26 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
--- 1. TẮT + PHÁ HỦY TOÀN BỘ LIGHTING
+-- 1. TỐI ƯU LIGHTING
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
-    Lighting.Brightness = 0
+    Lighting.Brightness = 1
     Lighting.FogEnd = 9e9
     Lighting.FogStart = 0
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
-    Lighting.ClockTime = 12
 end)
 
+-- Tắt toàn bộ post effect
 for _, v in pairs(Lighting:GetChildren()) do
     if v:IsA("PostEffect") then
-        pcall(function() v:Destroy() end)
+        pcall(function() v.Enabled = false end)
     end
 end
 
 ------------------------------------------------
--- 2. TẮT NƯỚC
+-- 2. TỐI ƯU NƯỚC
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -41,9 +40,9 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. HÀM XOÁ TẤT CẢ THỨ GÂY LAG
+-- 3. CHỈ TẮT / GIẢM THỨ GÂY LAG (KHÔNG XOÁ MAP)
 ------------------------------------------------
-local function KillLag(root)
+local function Optimize(root)
     for _, v in pairs(root:GetDescendants()) do
         if v:IsA("ParticleEmitter")
         or v:IsA("Trail")
@@ -51,75 +50,66 @@ local function KillLag(root)
         or v:IsA("Fire")
         or v:IsA("Sparkles")
         or v:IsA("Explosion")
-        or v:IsA("Beam")
-        or v:IsA("Decal")
-        or v:IsA("Texture")
-        or v:IsA("Shirt")
-        or v:IsA("Pants")
-        or v:IsA("Accessory") then
-            pcall(function() v:Destroy() end)
-
-        elseif v:IsA("MeshPart")
-        or v:IsA("Part")
-        or v:IsA("UnionOperation") then
+        or v:IsA("Beam") then
+            pcall(function()
+                v.Enabled = false
+            end)
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            pcall(function()
+                v.Transparency = 1
+            end)
+        elseif v:IsA("BasePart") then
             pcall(function()
                 v.Material = Enum.Material.Plastic
                 v.Reflectance = 0
                 v.CastShadow = false
-            end)
-
-        elseif v:IsA("SurfaceGui")
-        or v:IsA("BillboardGui") then
-            pcall(function()
-                v.Enabled = false
             end)
         end
     end
 end
 
 ------------------------------------------------
--- 4. PHÁ MAP NGAY LẬP TỨC
+-- 4. ÁP DỤNG
 ------------------------------------------------
-KillLag(workspace)
-KillLag(game)
+Optimize(workspace)
 
 ------------------------------------------------
--- 5. ÉP ROBLOX VỀ MỨC RENDER THẤP NHẤT
+-- 5. ÉP ROBLOX RENDER THẤP NHẤT
 ------------------------------------------------
 pcall(function()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end)
 
 ------------------------------------------------
--- 6. TẮT BÓNG + GIẢM CHI TIẾT NHÂN VẬT
+-- 6. TỐI ƯU NHÂN VẬT
 ------------------------------------------------
-local function PotatoChar(char)
+local function OptimizeChar(char)
     for _, v in pairs(char:GetDescendants()) do
         if v:IsA("BasePart") then
             v.CastShadow = false
             v.Material = Enum.Material.Plastic
-        elseif v:IsA("Decal") or v:IsA("Texture") then
-            pcall(function() v:Destroy() end)
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Enabled = false
         end
     end
 end
 
 if player.Character then
-    PotatoChar(player.Character)
+    OptimizeChar(player.Character)
 end
-player.CharacterAdded:Connect(PotatoChar)
+player.CharacterAdded:Connect(OptimizeChar)
 
 ------------------------------------------------
--- 7. DỌN LẠI LIÊN TỤC MỖI 5 GIÂY
+-- 7. DỌN LẠI ĐỊNH KỲ (GAME TẠO EFFECT MỚI)
 ------------------------------------------------
 task.spawn(function()
     while true do
         task.wait(5)
         pcall(function()
-            KillLag(workspace)
+            Optimize(workspace)
         end)
     end
 end)
 
 ------------------------------------------------
-print("💀 POTATO MODE ENABLED - MAX FPS UNLOCKED!")
+print("⚡ ULTRA FPS BOOST ENABLED - SAFE MODE!")
