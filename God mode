@@ -1,0 +1,75 @@
+--// GODMODE WITH UI
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+local GodMode = false
+local hum
+
+local function SetupChar(char)
+    hum = char:WaitForChild("Humanoid")
+
+    hum.BreakJointsOnDeath = false
+    hum.RequiresNeck = false
+
+    hum:GetPropertyChangedSignal("Health"):Connect(function()
+        if GodMode and hum.Health < hum.MaxHealth then
+            hum.Health = hum.MaxHealth
+        end
+    end)
+end
+
+if lp.Character then
+    SetupChar(lp.Character)
+end
+
+lp.CharacterAdded:Connect(function(char)
+    task.wait(1)
+    SetupChar(char)
+end)
+
+--// UI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "GodModeUI"
+
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 220, 0, 120)
+Main.Position = UDim2.new(0, 20, 0.4, 0)
+Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Main.Active = true
+Main.Draggable = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1,0,0,30)
+Title.Text = "GODMODE MENU"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+
+local Toggle = Instance.new("TextButton", Main)
+Toggle.Size = UDim2.new(0.9,0,0,40)
+Toggle.Position = UDim2.new(0.05,0,0,45)
+Toggle.Text = "GodMode: OFF"
+Toggle.BackgroundColor3 = Color3.fromRGB(170,0,0)
+Toggle.TextColor3 = Color3.new(1,1,1)
+Toggle.Font = Enum.Font.GothamBold
+Toggle.TextSize = 14
+Instance.new("UICorner", Toggle)
+
+Toggle.MouseButton1Click:Connect(function()
+    GodMode = not GodMode
+    if GodMode then
+        Toggle.Text = "GodMode: ON"
+        Toggle.BackgroundColor3 = Color3.fromRGB(0,170,0)
+        if hum then
+            hum.Health = hum.MaxHealth
+        end
+    else
+        Toggle.Text = "GodMode: OFF"
+        Toggle.BackgroundColor3 = Color3.fromRGB(170,0,0)
+    end
+end)
+
+print("✅ GodMode UI Loaded")
