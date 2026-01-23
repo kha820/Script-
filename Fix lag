@@ -1,40 +1,54 @@
--- BLOX FRUITS ULTRA FPS BOOST (EXTREME LOW)
--- By kha
+-- EXTREME FPS BOOST / DESTROY LAG SCRIPT
+-- By KHA
+-- WARNING: GRAPHIC WILL BE VERY UGLY
 
 repeat task.wait() until game:IsLoaded()
 
+local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
-local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Tắt toàn bộ lighting nặng
+------------------------------------------------
+-- 1. TẮT TOÀN BỘ LIGHTING
+------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
-    Lighting.Brightness = 1
+    Lighting.Brightness = 0
     Lighting.FogEnd = 9e9
+    Lighting.FogStart = 0
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
+    Lighting.ClockTime = 14
 end)
 
--- Xóa toàn bộ effect
+-- XÓA TOÀN BỘ HIỆU ỨNG HẬU KỲ
 for _, v in pairs(Lighting:GetChildren()) do
     if v:IsA("PostEffect") then
-        v:Destroy()
+        pcall(function()
+            v:Destroy()
+        end)
     end
 end
 
--- Tối ưu nước
+------------------------------------------------
+-- 2. TỐI ƯU NƯỚC
+------------------------------------------------
 pcall(function()
-    Terrain.WaterWaveSize = 0
-    Terrain.WaterWaveSpeed = 0
-    Terrain.WaterReflectance = 0
-    Terrain.WaterTransparency = 1
+    if Terrain then
+        Terrain.WaterWaveSize = 0
+        Terrain.WaterWaveSpeed = 0
+        Terrain.WaterReflectance = 0
+        Terrain.WaterTransparency = 1
+    end
 end)
 
--- HÀM dọn map cực mạnh
-local function ClearMap()
-    for _, v in pairs(workspace:GetDescendants()) do
+------------------------------------------------
+-- 3. HÀM XOÁ / TẮT MỌI THỨ GÂY LAG
+------------------------------------------------
+local function NukeLag(obj)
+    for _, v in pairs(obj:GetDescendants()) do
+        -- XOÁ TẤT CẢ EFFECT + DECAL + TEXTURE
         if v:IsA("ParticleEmitter")
         or v:IsA("Trail")
         or v:IsA("Smoke")
@@ -42,10 +56,13 @@ local function ClearMap()
         or v:IsA("Sparkles")
         or v:IsA("Explosion")
         or v:IsA("Decal")
-        or v:IsA("Texture") then
+        or v:IsA("Texture")
+        or v:IsA("Beam") then
             pcall(function()
                 v:Destroy()
             end)
+
+        -- TỐI GIẢN BLOCK
         elseif v:IsA("MeshPart")
         or v:IsA("Part")
         or v:IsA("UnionOperation") then
@@ -54,18 +71,31 @@ local function ClearMap()
                 v.Reflectance = 0
                 v.CastShadow = false
             end)
+
+        -- TẮT UI KHÔNG CẦN
+        elseif v:IsA("SurfaceGui") or v:IsA("BillboardGui") then
+            pcall(function()
+                v.Enabled = false
+            end)
+
+        -- TẮT ANIMATION CONTROLLER
+        elseif v:IsA("AnimationController") or v:IsA("Animator") then
+            pcall(function()
+                v:Destroy()
+            end)
         end
     end
 end
 
-ClearMap()
+------------------------------------------------
+-- 4. DỌN SẠCH MAP
+------------------------------------------------
+NukeLag(workspace)
+NukeLag(game)
 
--- Giảm chất lượng render xuống thấp nhất
-pcall(function()
-    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-end)
-
--- Tắt bóng nhân vật
+------------------------------------------------
+-- 5. TẮT BÓNG NHÂN VẬT
+------------------------------------------------
 local function NoShadowChar(char)
     for _, v in pairs(char:GetDescendants()) do
         if v:IsA("BasePart") then
@@ -79,4 +109,24 @@ if player.Character then
 end
 player.CharacterAdded:Connect(NoShadowChar)
 
-print("🔥 ULTRA LOW MODE ON - MAX FPS!")
+------------------------------------------------
+-- 6. ÉP ROBLOX RENDER Ở MỨC THẤP NHẤT
+------------------------------------------------
+pcall(function()
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+end)
+
+------------------------------------------------
+-- 7. DỌN LẠI MỖI 10 GIÂY (GAME TẠO EFFECT MỚI)
+------------------------------------------------
+task.spawn(function()
+    while true do
+        task.wait(10)
+        pcall(function()
+            NukeLag(workspace)
+        end)
+    end
+end)
+
+------------------------------------------------
+print("💀 EXTREME FPS MODE ON - DESTROY ALL LAG!")
