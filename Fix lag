@@ -1,52 +1,82 @@
--- ROBLOX FIX LAG / BOOST FPS
+-- BLOX FRUITS ULTRA FPS BOOST (EXTREME LOW)
 -- By kha
+
+repeat task.wait() until game:IsLoaded()
 
 local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
--- Tối ưu Lighting
+-- Tắt toàn bộ lighting nặng
 pcall(function()
     Lighting.GlobalShadows = false
-    Lighting.FogEnd = 9e9
     Lighting.Brightness = 1
+    Lighting.FogEnd = 9e9
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
 end)
 
--- Xóa hiệu ứng nặng
+-- Xóa toàn bộ effect
 for _, v in pairs(Lighting:GetChildren()) do
-    if v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("SunRaysEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") then
-        v.Enabled = false
+    if v:IsA("PostEffect") then
+        v:Destroy()
     end
 end
 
--- Tối ưu Terrain
+-- Tối ưu nước
 pcall(function()
     Terrain.WaterWaveSize = 0
     Terrain.WaterWaveSpeed = 0
     Terrain.WaterReflectance = 0
-    Terrain.WaterTransparency = 0
+    Terrain.WaterTransparency = 1
 end)
 
--- Tối ưu vật thể trong map
-for _, v in pairs(workspace:GetDescendants()) do
-    if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("UnionOperation") then
-        pcall(function()
-            v.Material = Enum.Material.Plastic
-            v.Reflectance = 0
-        end)
-    elseif v:IsA("Decal") or v:IsA("Texture") then
-        pcall(function()
-            v:Destroy() -- Xóa texture để giảm lag
-        end)
-    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
-        pcall(function()
-            v.Enabled = false
-        end)
+-- HÀM dọn map cực mạnh
+local function ClearMap()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("ParticleEmitter")
+        or v:IsA("Trail")
+        or v:IsA("Smoke")
+        or v:IsA("Fire")
+        or v:IsA("Sparkles")
+        or v:IsA("Explosion")
+        or v:IsA("Decal")
+        or v:IsA("Texture") then
+            pcall(function()
+                v:Destroy()
+            end)
+        elseif v:IsA("MeshPart")
+        or v:IsA("Part")
+        or v:IsA("UnionOperation") then
+            pcall(function()
+                v.Material = Enum.Material.Plastic
+                v.Reflectance = 0
+                v.CastShadow = false
+            end)
+        end
     end
 end
 
--- Giảm chất lượng render
-settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+ClearMap()
 
-print("✅ FIX LAG ĐÃ BẬT - FPS BOOSTED!")
+-- Giảm chất lượng render xuống thấp nhất
+pcall(function()
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+end)
+
+-- Tắt bóng nhân vật
+local function NoShadowChar(char)
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CastShadow = false
+        end
+    end
+end
+
+if player.Character then
+    NoShadowChar(player.Character)
+end
+player.CharacterAdded:Connect(NoShadowChar)
+
+print("🔥 ULTRA LOW MODE ON - MAX FPS!")
