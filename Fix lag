@@ -1,6 +1,6 @@
--- EXTREME FPS BOOST / DESTROY LAG SCRIPT
--- By KHA
--- WARNING: GRAPHIC WILL BE VERY UGLY
+-- ABSOLUTE MAX FPS / POTATO MODE
+-- DESTROY EVERYTHING THAT CAUSES LAG
+-- By ChatGPT
 
 repeat task.wait() until game:IsLoaded()
 
@@ -10,7 +10,7 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
--- 1. TẮT TOÀN BỘ LIGHTING
+-- 1. TẮT + PHÁ HỦY TOÀN BỘ LIGHTING
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
@@ -19,20 +19,17 @@ pcall(function()
     Lighting.FogStart = 0
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
-    Lighting.ClockTime = 14
+    Lighting.ClockTime = 12
 end)
 
--- XÓA TOÀN BỘ HIỆU ỨNG HẬU KỲ
 for _, v in pairs(Lighting:GetChildren()) do
     if v:IsA("PostEffect") then
-        pcall(function()
-            v:Destroy()
-        end)
+        pcall(function() v:Destroy() end)
     end
 end
 
 ------------------------------------------------
--- 2. TỐI ƯU NƯỚC
+-- 2. TẮT NƯỚC
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -44,25 +41,24 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. HÀM XOÁ / TẮT MỌI THỨ GÂY LAG
+-- 3. HÀM XOÁ TẤT CẢ THỨ GÂY LAG
 ------------------------------------------------
-local function NukeLag(obj)
-    for _, v in pairs(obj:GetDescendants()) do
-        -- XOÁ TẤT CẢ EFFECT + DECAL + TEXTURE
+local function KillLag(root)
+    for _, v in pairs(root:GetDescendants()) do
         if v:IsA("ParticleEmitter")
         or v:IsA("Trail")
         or v:IsA("Smoke")
         or v:IsA("Fire")
         or v:IsA("Sparkles")
         or v:IsA("Explosion")
+        or v:IsA("Beam")
         or v:IsA("Decal")
         or v:IsA("Texture")
-        or v:IsA("Beam") then
-            pcall(function()
-                v:Destroy()
-            end)
+        or v:IsA("Shirt")
+        or v:IsA("Pants")
+        or v:IsA("Accessory") then
+            pcall(function() v:Destroy() end)
 
-        -- TỐI GIẢN BLOCK
         elseif v:IsA("MeshPart")
         or v:IsA("Part")
         or v:IsA("UnionOperation") then
@@ -72,61 +68,58 @@ local function NukeLag(obj)
                 v.CastShadow = false
             end)
 
-        -- TẮT UI KHÔNG CẦN
-        elseif v:IsA("SurfaceGui") or v:IsA("BillboardGui") then
+        elseif v:IsA("SurfaceGui")
+        or v:IsA("BillboardGui") then
             pcall(function()
                 v.Enabled = false
             end)
-
-        -- TẮT ANIMATION CONTROLLER
-        elseif v:IsA("AnimationController") or v:IsA("Animator") then
-            pcall(function()
-                v:Destroy()
-            end)
         end
     end
 end
 
 ------------------------------------------------
--- 4. DỌN SẠCH MAP
+-- 4. PHÁ MAP NGAY LẬP TỨC
 ------------------------------------------------
-NukeLag(workspace)
-NukeLag(game)
+KillLag(workspace)
+KillLag(game)
 
 ------------------------------------------------
--- 5. TẮT BÓNG NHÂN VẬT
-------------------------------------------------
-local function NoShadowChar(char)
-    for _, v in pairs(char:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CastShadow = false
-        end
-    end
-end
-
-if player.Character then
-    NoShadowChar(player.Character)
-end
-player.CharacterAdded:Connect(NoShadowChar)
-
-------------------------------------------------
--- 6. ÉP ROBLOX RENDER Ở MỨC THẤP NHẤT
+-- 5. ÉP ROBLOX VỀ MỨC RENDER THẤP NHẤT
 ------------------------------------------------
 pcall(function()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end)
 
 ------------------------------------------------
--- 7. DỌN LẠI MỖI 10 GIÂY (GAME TẠO EFFECT MỚI)
+-- 6. TẮT BÓNG + GIẢM CHI TIẾT NHÂN VẬT
+------------------------------------------------
+local function PotatoChar(char)
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CastShadow = false
+            v.Material = Enum.Material.Plastic
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            pcall(function() v:Destroy() end)
+        end
+    end
+end
+
+if player.Character then
+    PotatoChar(player.Character)
+end
+player.CharacterAdded:Connect(PotatoChar)
+
+------------------------------------------------
+-- 7. DỌN LẠI LIÊN TỤC MỖI 5 GIÂY
 ------------------------------------------------
 task.spawn(function()
     while true do
-        task.wait(10)
+        task.wait(5)
         pcall(function()
-            NukeLag(workspace)
+            KillLag(workspace)
         end)
     end
 end)
 
 ------------------------------------------------
-print("💀 EXTREME FPS MODE ON - DESTROY ALL LAG!")
+print("💀 POTATO MODE ENABLED - MAX FPS UNLOCKED!")
