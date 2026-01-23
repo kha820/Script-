@@ -1,6 +1,6 @@
 -- ABSOLUTE MAX FPS / POTATO MODE
 -- DESTROY EVERYTHING THAT CAUSES LAG
--- By ChatGPT
+-- By Kha
 
 repeat task.wait() until game:IsLoaded()
 
