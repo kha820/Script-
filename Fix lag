@@ -1,110 +1,52 @@
-repeat task.wait() until game:IsLoaded()
+-- ROBLOX FIX LAG / BOOST FPS
+-- By ChatGPT
 
-local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
-local Workspace = game:GetService("Workspace")
-local player = Players.LocalPlayer
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
--- ====== 1. ÉP ÁNH SÁNG SIÊU NHẸ + KHÔNG TỐI ======
+-- Tối ưu Lighting
 pcall(function()
-    Lighting.Brightness = 2
-    Lighting.ClockTime = 14
-    Lighting.FogEnd = 1e9
     Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    Lighting.Brightness = 1
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
-
-    for _, v in pairs(Lighting:GetChildren()) do
-        v:Destroy()
-    end
 end)
 
--- ====== 2. DANH SÁCH EFFECT CẦN XOÁ ======
-local EffectClasses = {
-    "ParticleEmitter","Trail","Beam","Fire","Smoke","Sparkles","Explosion",
-    "Highlight","BlurEffect","BloomEffect","SunRaysEffect","ColorCorrectionEffect",
-    "DepthOfFieldEffect","Atmosphere","Clouds"
-}
-
-local function IsEffect(obj)
-    for _, c in ipairs(EffectClasses) do
-        if obj:IsA(c) then return true end
+-- Xóa hiệu ứng nặng
+for _, v in pairs(Lighting:GetChildren()) do
+    if v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("SunRaysEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") then
+        v.Enabled = false
     end
-    return false
 end
 
--- ====== 3. KIỂM TRA CÓ PHẢI NPC / PLAYER KHÔNG ======
-local function IsInsideCharacter(obj)
-    local p = obj
-    while p do
-        if p:IsA("Model") and p:FindFirstChildOfClass("Humanoid") then
-            return true
-        end
-        p = p.Parent
-    end
-    return false
-end
-
--- ====== 4. TỐI ƯU TỪNG OBJECT ======
-local function Optimize(obj)
-    pcall(function()
-        -- Xoá effect
-        if IsEffect(obj) then
-            obj:Destroy()
-            return
-        end
-
-        -- Không phá NPC / Player
-        if IsInsideCharacter(obj) then
-            return
-        end
-
-        -- Hạ chất lượng part map
-        if obj:IsA("Part") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
-            obj.Material = Enum.Material.Plastic
-            obj.Reflectance = 0
-            obj.CastShadow = false
-        end
-
-        -- Xoá texture / decal trên map (rất nặng)
-        if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance") then
-            obj:Destroy()
-        end
-    end)
-end
-
--- ====== 5. QUÉT TOÀN MAP ======
-for _, v in pairs(Workspace:GetDescendants()) do
-    Optimize(v)
-end
-
--- ====== 6. BẤT CỨ THỨ GÌ SPAWN RA → TỐI ƯU NGAY ======
-Workspace.DescendantAdded:Connect(function(obj)
-    Optimize(obj)
-end)
-
--- ====== 7. KHI RESPAWN → QUÉT LẠI ======
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    for _, v in pairs(Workspace:GetDescendants()) do
-        Optimize(v)
-    end
-end)
-
--- ====== 8. DỌN LẠI ĐỊNH KỲ ======
-task.spawn(function()
-    while true do
-        task.wait(10)
-        for _, v in pairs(Workspace:GetDescendants()) do
-            Optimize(v)
-        end
-        collectgarbage("collect")
-    end
-end)
-
--- ====== 9. ÉP ROBLOX XUỐNG CHẤT LƯỢNG THẤP NHẤT ======
+-- Tối ưu Terrain
 pcall(function()
-    settings().Rendering.QualityLevel = 1
+    Terrain.WaterWaveSize = 0
+    Terrain.WaterWaveSpeed = 0
+    Terrain.WaterReflectance = 0
+    Terrain.WaterTransparency = 0
 end)
 
-print("✅ ULTRA POTATO MODE ENABLED")
+-- Tối ưu vật thể trong map
+for _, v in pairs(workspace:GetDescendants()) do
+    if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("UnionOperation") then
+        pcall(function()
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        end)
+    elseif v:IsA("Decal") or v:IsA("Texture") then
+        pcall(function()
+            v:Destroy() -- Xóa texture để giảm lag
+        end)
+    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+        pcall(function()
+            v.Enabled = false
+        end)
+    end
+end
+
+-- Giảm chất lượng render
+settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+
+print("✅ FIX LAG ĐÃ BẬT - FPS BOOSTED!")
