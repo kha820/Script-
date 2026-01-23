@@ -1,35 +1,111 @@
--- Chạy trong ServerScriptService
-local Workspace = game:GetService("Workspace")
+--// HITBOX NPC WITH UI
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
 
--- Kích thước hitbox mong muốn cho quái
-local newHitboxSize = Vector3.new(10, 10, 10) -- thay số theo ý bạn
+-- SETTINGS
+local HitboxEnabled = false
+local HitboxSize = 15
 
--- Hàm kiểm tra xem model có phải quái không
-local function isEnemy(model)
-    -- Giả sử quái được đặt trong folder "Enemies" trong workspace
-    return model:IsDescendantOf(Workspace:WaitForChild("Enemies"))
-end
+-- CREATE UI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "HitboxUI"
 
--- Hàm tăng hitbox cho quái
-local function enlargeEnemyHitbox(enemy)
-    if enemy:FindFirstChild("HumanoidRootPart") then
-        local hrp = enemy.HumanoidRootPart
-        hrp.Size = newHitboxSize
-        hrp.Transparency = 0.5 -- nhìn thấy hitbox nếu muốn
-        hrp.CanCollide = true
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 220, 0, 140)
+Main.Position = UDim2.new(0, 20, 0.4, 0)
+Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Main.Active = true
+Main.Draggable = true
+
+local UICorner = Instance.new("UICorner", Main)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1,0,0,30)
+Title.Text = "NPC HITBOX MENU"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+
+-- TOGGLE BUTTON
+local Toggle = Instance.new("TextButton", Main)
+Toggle.Size = UDim2.new(0.9,0,0,35)
+Toggle.Position = UDim2.new(0.05,0,0,40)
+Toggle.Text = "Hitbox: OFF"
+Toggle.BackgroundColor3 = Color3.fromRGB(170,0,0)
+Toggle.TextColor3 = Color3.new(1,1,1)
+Toggle.Font = Enum.Font.GothamBold
+Toggle.TextSize = 14
+Instance.new("UICorner", Toggle)
+
+-- SLIDER TEXT
+local SizeText = Instance.new("TextLabel", Main)
+SizeText.Size = UDim2.new(1,0,0,25)
+SizeText.Position = UDim2.new(0,0,0,85)
+SizeText.Text = "Size: "..HitboxSize
+SizeText.TextColor3 = Color3.new(1,1,1)
+SizeText.BackgroundTransparency = 1
+SizeText.Font = Enum.Font.Gotham
+SizeText.TextSize = 13
+
+-- SLIDER
+local Minus = Instance.new("TextButton", Main)
+Minus.Size = UDim2.new(0,40,0,30)
+Minus.Position = UDim2.new(0.1,0,0,110)
+Minus.Text = "-"
+Minus.Font = Enum.Font.GothamBold
+Minus.TextSize = 20
+Minus.BackgroundColor3 = Color3.fromRGB(50,50,50)
+Minus.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", Minus)
+
+local Plus = Instance.new("TextButton", Main)
+Plus.Size = UDim2.new(0,40,0,30)
+Plus.Position = UDim2.new(0.7,0,0,110)
+Plus.Text = "+"
+Plus.Font = Enum.Font.GothamBold
+Plus.TextSize = 20
+Plus.BackgroundColor3 = Color3.fromRGB(50,50,50)
+Plus.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", Plus)
+
+-- BUTTON EVENTS
+Toggle.MouseButton1Click:Connect(function()
+    HitboxEnabled = not HitboxEnabled
+    if HitboxEnabled then
+        Toggle.Text = "Hitbox: ON"
+        Toggle.BackgroundColor3 = Color3.fromRGB(0,170,0)
+    else
+        Toggle.Text = "Hitbox: OFF"
+        Toggle.BackgroundColor3 = Color3.fromRGB(170,0,0)
     end
-end
+end)
 
--- Tăng hitbox cho quái đã có
-for _, enemy in pairs(Workspace.Enemies:GetChildren()) do
-    if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
-        enlargeEnemyHitbox(enemy)
-    end
-end
+Plus.MouseButton1Click:Connect(function()
+    HitboxSize = math.clamp(HitboxSize + 2, 5, 50)
+    SizeText.Text = "Size: "..HitboxSize
+end)
 
--- Tăng hitbox cho quái mới spawn
-Workspace.Enemies.ChildAdded:Connect(function(enemy)
-    if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
-        enlargeEnemyHitbox(enemy)
+Minus.MouseButton1Click:Connect(function()
+    HitboxSize = math.clamp(HitboxSize - 2, 5, 50)
+    SizeText.Text = "Size: "..HitboxSize
+end)
+
+-- MAIN LOOP
+RunService.RenderStepped:Connect(function()
+    if HitboxEnabled then
+        for _,v in pairs(workspace:GetChildren()) do
+            if v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and not Players:GetPlayerFromCharacter(v) then
+                pcall(function()
+                    v.HumanoidRootPart.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+                    v.HumanoidRootPart.Transparency = 0.7
+                    v.HumanoidRootPart.Material = Enum.Material.Neon
+                    v.HumanoidRootPart.BrickColor = BrickColor.new("Really red")
+                    v.HumanoidRootPart.CanCollide = false
+                end)
+            end
+        end
     end
 end)
