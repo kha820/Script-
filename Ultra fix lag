@@ -1,0 +1,120 @@
+-- 💀🚀 POTATO + ULTRA MOBILE HYBRID MODE
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local player = Players.LocalPlayer
+
+------------------------------------------------
+-- 1. LIGHTING = CỰC THẤP (MOBILE + POTATO)
+------------------------------------------------
+pcall(function()
+    Lighting.GlobalShadows = false
+    Lighting.Brightness = 0
+    Lighting.ClockTime = 12
+    Lighting.FogEnd = 9e9
+    Lighting.FogStart = 0
+    Lighting.EnvironmentDiffuseScale = 0
+    Lighting.EnvironmentSpecularScale = 0
+end)
+
+for _,v in pairs(Lighting:GetChildren()) do
+    if v:IsA("PostEffect")
+    or v:IsA("Sky")
+    or v:IsA("Atmosphere")
+    or v:IsA("BloomEffect")
+    or v:IsA("SunRaysEffect")
+    or v:IsA("ColorCorrectionEffect")
+    or v:IsA("DepthOfFieldEffect") then
+        pcall(function() v:Destroy() end)
+    end
+end
+
+------------------------------------------------
+-- 2. WATER = GẦN NHƯ OFF
+------------------------------------------------
+pcall(function()
+    if Terrain then
+        Terrain.WaterWaveSize = 0
+        Terrain.WaterWaveSpeed = 0
+        Terrain.WaterReflectance = 0
+        Terrain.WaterTransparency = 1
+    end
+end)
+
+------------------------------------------------
+-- 3. WORLD = POTATO EXTREME SAFE
+------------------------------------------------
+local function HybridOptimize(root)
+    for _,v in pairs(root:GetDescendants()) do
+
+        if v:IsA("ParticleEmitter")
+        or v:IsA("Trail")
+        or v:IsA("Smoke")
+        or v:IsA("Fire")
+        or v:IsA("Sparkles")
+        or v:IsA("Beam")
+        or v:IsA("Explosion") then
+            pcall(function()
+                v.Enabled = false
+            end)
+
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            pcall(function()
+                v.Transparency = 1
+            end)
+
+        elseif v:IsA("BasePart") then
+            pcall(function()
+                v.Material = Enum.Material.Plastic
+                v.Reflectance = 0
+                v.CastShadow = false
+            end)
+        end
+    end
+end
+
+HybridOptimize(workspace)
+
+------------------------------------------------
+-- 4. RENDER = LOWEST EVER (MOBILE)
+------------------------------------------------
+pcall(function()
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level01
+end)
+
+------------------------------------------------
+-- 5. CHARACTER = NO EFFECT
+------------------------------------------------
+local function HybridChar(char)
+    for _,v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.Plastic
+            v.CastShadow = false
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Enabled = false
+        end
+    end
+end
+
+if player.Character then
+    HybridChar(player.Character)
+end
+player.CharacterAdded:Connect(HybridChar)
+
+------------------------------------------------
+-- 6. AUTO CLEAN (CHỐNG GAME TẠO EFFECT)
+------------------------------------------------
+task.spawn(function()
+    while true do
+        task.wait(2)
+        pcall(function()
+            HybridOptimize(workspace)
+        end)
+    end
+end)
+
+------------------------------------------------
+print("💀🚀 HYBRID MODE ENABLED – MAX FPS FOR MOBILE")
