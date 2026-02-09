@@ -1,6 +1,4 @@
--- ULTRA FPS BOOST (SAFE EXTREME)
--- By Kha
-
+-- 💀🚀 POTATO + ULTRA MOBILE HYBRID MODE
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -9,26 +7,32 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
--- 1. TỐI ƯU LIGHTING
+-- 1. LIGHTING = CỰC THẤP (MOBILE + POTATO)
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
-    Lighting.Brightness = 1
+    Lighting.Brightness = 0
+    Lighting.ClockTime = 12
     Lighting.FogEnd = 9e9
     Lighting.FogStart = 0
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
 end)
 
--- Tắt toàn bộ post effect
-for _, v in pairs(Lighting:GetChildren()) do
-    if v:IsA("PostEffect") then
-        pcall(function() v.Enabled = false end)
+for _,v in pairs(Lighting:GetChildren()) do
+    if v:IsA("PostEffect")
+    or v:IsA("Sky")
+    or v:IsA("Atmosphere")
+    or v:IsA("BloomEffect")
+    or v:IsA("SunRaysEffect")
+    or v:IsA("ColorCorrectionEffect")
+    or v:IsA("DepthOfFieldEffect") then
+        pcall(function() v:Destroy() end)
     end
 end
 
 ------------------------------------------------
--- 2. TỐI ƯU NƯỚC
+-- 2. WATER = GẦN NHƯ OFF
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -40,24 +44,27 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. CHỈ TẮT / GIẢM THỨ GÂY LAG (KHÔNG XOÁ MAP)
+-- 3. WORLD = POTATO EXTREME SAFE
 ------------------------------------------------
-local function Optimize(root)
-    for _, v in pairs(root:GetDescendants()) do
+local function HybridOptimize(root)
+    for _,v in pairs(root:GetDescendants()) do
+
         if v:IsA("ParticleEmitter")
         or v:IsA("Trail")
         or v:IsA("Smoke")
         or v:IsA("Fire")
         or v:IsA("Sparkles")
-        or v:IsA("Explosion")
-        or v:IsA("Beam") then
+        or v:IsA("Beam")
+        or v:IsA("Explosion") then
             pcall(function()
                 v.Enabled = false
             end)
+
         elseif v:IsA("Decal") or v:IsA("Texture") then
             pcall(function()
                 v.Transparency = 1
             end)
+
         elseif v:IsA("BasePart") then
             pcall(function()
                 v.Material = Enum.Material.Plastic
@@ -68,26 +75,24 @@ local function Optimize(root)
     end
 end
 
-------------------------------------------------
--- 4. ÁP DỤNG
-------------------------------------------------
-Optimize(workspace)
+HybridOptimize(workspace)
 
 ------------------------------------------------
--- 5. ÉP ROBLOX RENDER THẤP NHẤT
+-- 4. RENDER = LOWEST EVER (MOBILE)
 ------------------------------------------------
 pcall(function()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level01
 end)
 
 ------------------------------------------------
--- 6. TỐI ƯU NHÂN VẬT
+-- 5. CHARACTER = NO EFFECT
 ------------------------------------------------
-local function OptimizeChar(char)
-    for _, v in pairs(char:GetDescendants()) do
+local function HybridChar(char)
+    for _,v in pairs(char:GetDescendants()) do
         if v:IsA("BasePart") then
-            v.CastShadow = false
             v.Material = Enum.Material.Plastic
+            v.CastShadow = false
         elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
             v.Enabled = false
         end
@@ -95,21 +100,21 @@ local function OptimizeChar(char)
 end
 
 if player.Character then
-    OptimizeChar(player.Character)
+    HybridChar(player.Character)
 end
-player.CharacterAdded:Connect(OptimizeChar)
+player.CharacterAdded:Connect(HybridChar)
 
 ------------------------------------------------
--- 7. DỌN LẠI ĐỊNH KỲ (GAME TẠO EFFECT MỚI)
+-- 6. AUTO CLEAN (CHỐNG GAME TẠO EFFECT)
 ------------------------------------------------
 task.spawn(function()
     while true do
-        task.wait(5)
+        task.wait(2)
         pcall(function()
-            Optimize(workspace)
+            HybridOptimize(workspace)
         end)
     end
 end)
 
 ------------------------------------------------
-print("⚡ ULTRA FPS BOOST ENABLED - SAFE MODE!")
+print("💀🚀 HYBRID MODE ENABLED – MAX FPS FOR MOBILE")
