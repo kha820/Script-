@@ -1,4 +1,4 @@
--- 💀 GOD TIER FPS BOOST (EXTREME MOBILE SAFE)
+-- 🔥 STABLE FPS BOOST (NO SPIKE VERSION)
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -7,17 +7,15 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
--- 1. LIGHTING HARD RESET
+-- LIGHTING
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
     Lighting.Brightness = 0
     Lighting.ClockTime = 12
-    Lighting.FogStart = 0
     Lighting.FogEnd = 9e9
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
-    Lighting.OutdoorAmbient = Color3.new(1,1,1)
 end)
 
 for _,v in pairs(Lighting:GetChildren()) do
@@ -25,7 +23,7 @@ for _,v in pairs(Lighting:GetChildren()) do
 end
 
 ------------------------------------------------
--- 2. WATER DESTROY EFFECT
+-- WATER
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -37,53 +35,49 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. WORLD ULTRA OPTIMIZE
+-- OPTIMIZE FUNCTION (NHẸ)
 ------------------------------------------------
-local function ExtremeOptimize(root)
-    for _,v in pairs(root:GetDescendants()) do
-        
-        if v:IsA("BasePart") then
-            v.Material = Enum.Material.Plastic
-            v.Reflectance = 0
-            v.CastShadow = false
+local function OptimizeObject(v)
 
-            -- giảm collision không cần thiết
-            if not v:IsDescendantOf(player.Character or nil) then
-                v.CanCollide = v.CanCollide
-            end
+    if v:IsA("BasePart") then
+        v.Material = Enum.Material.Plastic
+        v.Reflectance = 0
+        v.CastShadow = false
 
-        elseif v:IsA("Decal") or v:IsA("Texture") then
-            v.Transparency = 1
+    elseif v:IsA("Decal") or v:IsA("Texture") then
+        v.Transparency = 1
 
-        elseif v:IsA("ParticleEmitter")
-        or v:IsA("Trail")
-        or v:IsA("Smoke")
-        or v:IsA("Fire")
-        or v:IsA("Sparkles")
-        or v:IsA("Beam")
-        or v:IsA("Explosion") then
-            v.Enabled = false
-        end
+    elseif v:IsA("ParticleEmitter")
+    or v:IsA("Trail")
+    or v:IsA("Smoke")
+    or v:IsA("Fire")
+    or v:IsA("Sparkles")
+    or v:IsA("Beam")
+    or v:IsA("Explosion") then
+        v.Enabled = false
     end
 end
 
-ExtremeOptimize(workspace)
+------------------------------------------------
+-- CHẠY 1 LẦN DUY NHẤT
+------------------------------------------------
+for _,v in pairs(workspace:GetDescendants()) do
+    OptimizeObject(v)
+end
 
 ------------------------------------------------
--- 4. CHARACTER CLEAN
+-- CHỈ TỐI ƯU OBJECT MỚI (KHÔNG LOOP)
+------------------------------------------------
+workspace.DescendantAdded:Connect(function(obj)
+    OptimizeObject(obj)
+end)
+
+------------------------------------------------
+-- CHARACTER
 ------------------------------------------------
 local function OptimizeChar(char)
     for _,v in pairs(char:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.Material = Enum.Material.Plastic
-            v.CastShadow = false
-        elseif v:IsA("Accessory") then
-            if v:FindFirstChild("Handle") then
-                v.Handle.Transparency = 1
-            end
-        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-            v.Enabled = false
-        end
+        OptimizeObject(v)
     end
 end
 
@@ -93,24 +87,8 @@ end
 player.CharacterAdded:Connect(OptimizeChar)
 
 ------------------------------------------------
--- 5. FORCE LOWEST RENDER
-------------------------------------------------
 pcall(function()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-    settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level01
 end)
 
-------------------------------------------------
--- 6. AUTO CLEAN LOOP (ANTI EFFECT SPAWN)
-------------------------------------------------
-task.spawn(function()
-    while true do
-        task.wait(2)
-        pcall(function()
-            ExtremeOptimize(workspace)
-        end)
-    end
-end)
-
-------------------------------------------------
-print("💀🔥 GOD TIER FPS BOOST ENABLED")
+print("🔥 STABLE FPS MODE ENABLED (NO SPIKE)")
