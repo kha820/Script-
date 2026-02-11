@@ -1,21 +1,24 @@
--- 🔥 STABLE FPS BOOST (NO SPIKE VERSION)
+-- 🔥 ULTIMATE STABLE FPS BOOST
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
 ------------------------------------------------
--- LIGHTING
+-- 1. LIGHTING HARD RESET
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
     Lighting.Brightness = 0
     Lighting.ClockTime = 12
+    Lighting.FogStart = 0
     Lighting.FogEnd = 9e9
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
+    Lighting.OutdoorAmbient = Color3.new(1,1,1)
 end)
 
 for _,v in pairs(Lighting:GetChildren()) do
@@ -23,7 +26,7 @@ for _,v in pairs(Lighting:GetChildren()) do
 end
 
 ------------------------------------------------
--- WATER
+-- 2. WATER REDUCE
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -35,7 +38,7 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- OPTIMIZE FUNCTION (NHẸ)
+-- 3. OBJECT OPTIMIZER (LIGHT VERSION)
 ------------------------------------------------
 local function OptimizeObject(v)
 
@@ -43,6 +46,14 @@ local function OptimizeObject(v)
         v.Material = Enum.Material.Plastic
         v.Reflectance = 0
         v.CastShadow = false
+
+        -- giảm tính toán vật lý xa người chơi
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local root = player.Character.HumanoidRootPart
+            if (v.Position - root.Position).Magnitude > 300 then
+                v.CanCollide = false
+            end
+        end
 
     elseif v:IsA("Decal") or v:IsA("Texture") then
         v.Transparency = 1
@@ -59,25 +70,29 @@ local function OptimizeObject(v)
 end
 
 ------------------------------------------------
--- CHẠY 1 LẦN DUY NHẤT
+-- 4. CHẠY 1 LẦN BAN ĐẦU
 ------------------------------------------------
 for _,v in pairs(workspace:GetDescendants()) do
     OptimizeObject(v)
 end
 
 ------------------------------------------------
--- CHỈ TỐI ƯU OBJECT MỚI (KHÔNG LOOP)
+-- 5. CHỈ XỬ LÝ OBJECT MỚI
 ------------------------------------------------
 workspace.DescendantAdded:Connect(function(obj)
     OptimizeObject(obj)
 end)
 
 ------------------------------------------------
--- CHARACTER
+-- 6. CHARACTER OPTIMIZE
 ------------------------------------------------
 local function OptimizeChar(char)
     for _,v in pairs(char:GetDescendants()) do
         OptimizeObject(v)
+
+        if v:IsA("Accessory") and v:FindFirstChild("Handle") then
+            v.Handle.Transparency = 1
+        end
     end
 end
 
@@ -87,8 +102,18 @@ end
 player.CharacterAdded:Connect(OptimizeChar)
 
 ------------------------------------------------
+-- 7. FORCE LOW RENDER
+------------------------------------------------
 pcall(function()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end)
 
-print("🔥 STABLE FPS MODE ENABLED (NO SPIKE)")
+------------------------------------------------
+-- 8. GIẢM CAMERA SHAKE / UPDATE LOAD
+------------------------------------------------
+RunService:BindToRenderStep("FPSCap", Enum.RenderPriority.Camera.Value + 1, function()
+    workspace.CurrentCamera.FieldOfView = 70
+end)
+
+------------------------------------------------
+print("🔥 ULTIMATE STABLE FPS MODE ENABLED")
