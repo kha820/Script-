@@ -33,6 +33,7 @@ loadstring(game:HttpGet(("https://raw.githubusercontent.com/daucobonhi/Ui-Redz-V
      local Tab1o = MakeTab({Name = "99đêm trong rừng"})
      local Tab2o = MakeTab({Name = "Blox Fruits"})
      local Tab3o = MakeTab({Name = "grow a garden"})
+    local Tab4o = MakeTab({Name = "full game"})
      
 ------- BUTTON
     
@@ -73,6 +74,28 @@ AddButton(Tab3o, {
      Name = "speed hub",
     Callback = function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+  end
+  })
+
+
+AddButton(Tab4o, {
+     Name = "fix lag tự làm",
+    Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/kha820/Script-/refs/heads/main/Fix%20lag"))()
+  end
+  })
+
+AddButton(Tab4o, {
+     Name = "hixbox",
+    Callback = function()
+loadstring(game:HttpGet("https://pastefy.app/ItfO0tdg/raw"))()
+  end
+  })
+
+AddButton(Tab4o, {
+     Name = "aim",
+    Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hakariqScripts/aimbot-script/refs/heads/main/aimbot%20script"))()
   end
   })
 
