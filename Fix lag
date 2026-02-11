@@ -1,4 +1,4 @@
--- 🔥 ULTIMATE STABLE FPS BOOST
+-- 🔥 ULTIMATE FPS BOOST V2 (EXTREME STABLE)
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -6,9 +6,10 @@ local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 ------------------------------------------------
--- 1. LIGHTING HARD RESET
+-- 1. LIGHTING RESET
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
@@ -38,7 +39,7 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. OBJECT OPTIMIZER (LIGHT VERSION)
+-- 3. OPTIMIZE OBJECT
 ------------------------------------------------
 local function OptimizeObject(v)
 
@@ -47,11 +48,12 @@ local function OptimizeObject(v)
         v.Reflectance = 0
         v.CastShadow = false
 
-        -- giảm tính toán vật lý xa người chơi
+        -- Giảm update xa player
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local root = player.Character.HumanoidRootPart
-            if (v.Position - root.Position).Magnitude > 300 then
+            if (v.Position - root.Position).Magnitude > 250 then
                 v.CanCollide = false
+                v.Anchored = true
             end
         end
 
@@ -70,21 +72,18 @@ local function OptimizeObject(v)
 end
 
 ------------------------------------------------
--- 4. CHẠY 1 LẦN BAN ĐẦU
+-- 4. APPLY ONCE
 ------------------------------------------------
 for _,v in pairs(workspace:GetDescendants()) do
     OptimizeObject(v)
 end
 
-------------------------------------------------
--- 5. CHỈ XỬ LÝ OBJECT MỚI
-------------------------------------------------
 workspace.DescendantAdded:Connect(function(obj)
     OptimizeObject(obj)
 end)
 
 ------------------------------------------------
--- 6. CHARACTER OPTIMIZE
+-- 5. CHARACTER OPTIMIZE
 ------------------------------------------------
 local function OptimizeChar(char)
     for _,v in pairs(char:GetDescendants()) do
@@ -102,18 +101,27 @@ end
 player.CharacterAdded:Connect(OptimizeChar)
 
 ------------------------------------------------
--- 7. FORCE LOW RENDER
+-- 6. FORCE LOW RENDER
 ------------------------------------------------
 pcall(function()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end)
 
 ------------------------------------------------
--- 8. GIẢM CAMERA SHAKE / UPDATE LOAD
+-- 7. GIẢM CAMERA & UPDATE LOAD
 ------------------------------------------------
-RunService:BindToRenderStep("FPSCap", Enum.RenderPriority.Camera.Value + 1, function()
-    workspace.CurrentCamera.FieldOfView = 70
+RunService:Set3dRenderingEnabled(true)
+
+RunService:BindToRenderStep("FPSBoostCamera", Enum.RenderPriority.Camera.Value + 1, function()
+    Workspace.CurrentCamera.FieldOfView = 70
 end)
 
 ------------------------------------------------
-print("🔥 ULTIMATE STABLE FPS MODE ENABLED")
+-- 8. GIẢM PHYSICS STEP LOAD
+------------------------------------------------
+pcall(function()
+    settings().Physics.AllowSleep = true
+end)
+
+------------------------------------------------
+print("🔥 ULTIMATE FPS BOOST V2 ENABLED")
