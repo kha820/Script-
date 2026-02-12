@@ -116,4 +116,4 @@ Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 15)
 
 OpenBtn.MouseButton1Click:Connect(function()
 	Main.Visible = true
-end)
+end) 
