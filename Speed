@@ -1,0 +1,201 @@
+local main = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local up = Instance.new("TextButton")
+local down = Instance.new("TextButton")
+local onof = Instance.new("TextButton")
+local TextLabel = Instance.new("TextLabel")
+local plus = Instance.new("TextButton")
+local speed = Instance.new("TextLabel")
+local mine = Instance.new("TextButton")
+local closebutton = Instance.new("TextButton")
+local mini = Instance.new("TextButton")
+local mini2 = Instance.new("TextButton")
+
+main.Name = "main"
+main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+main.ResetOnSpawn = false
+
+Frame.Parent = main
+Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
+Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
+Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
+Frame.Size = UDim2.new(0, 190, 0, 57)
+Frame.Active = true
+Frame.Draggable = true
+
+up.Parent = Frame
+up.BackgroundColor3 = Color3.fromRGB(79, 255, 152)
+up.Size = UDim2.new(0, 44, 0, 28)
+up.Text = "UP"
+
+down.Parent = Frame
+down.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+down.Position = UDim2.new(0, 0, 0.491228074, 0)
+down.Size = UDim2.new(0, 44, 0, 28)
+down.Text = "DOWN"
+
+onof.Parent = Frame
+onof.BackgroundColor3 = Color3.fromRGB(255, 249, 74)
+onof.Position = UDim2.new(0.7028, 0, 0.4912, 0)
+onof.Size = UDim2.new(0, 56, 0, 28)
+onof.Text = "fly"
+
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
+TextLabel.Position = UDim2.new(0.4693, 0, 0, 0)
+TextLabel.Size = UDim2.new(0, 100, 0, 28)
+TextLabel.Text = "FLY GUI V3"
+TextLabel.TextScaled = true
+
+plus.Parent = Frame
+plus.BackgroundColor3 = Color3.fromRGB(133, 145, 255)
+plus.Position = UDim2.new(0.2315, 0, 0, 0)
+plus.Size = UDim2.new(0, 45, 0, 28)
+plus.Text = "+"
+plus.TextScaled = true
+
+speed.Parent = Frame
+speed.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
+speed.Position = UDim2.new(0.4684, 0, 0.4912, 0)
+speed.Size = UDim2.new(0, 44, 0, 28)
+speed.Text = "1"
+speed.TextScaled = true
+
+mine.Parent = Frame
+mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
+mine.Position = UDim2.new(0.2315, 0, 0.4912, 0)
+mine.Size = UDim2.new(0, 45, 0, 29)
+mine.Text = "-"
+mine.TextScaled = true
+
+closebutton.Parent = Frame
+closebutton.BackgroundColor3 = Color3.fromRGB(225, 25, 0)
+closebutton.Size = UDim2.new(0, 45, 0, 28)
+closebutton.Text = "X"
+closebutton.TextSize = 30
+closebutton.Position = UDim2.new(0, 0, -1, 27)
+
+mini.Parent = Frame
+mini.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+mini.Size = UDim2.new(0, 45, 0, 28)
+mini.Text = "-"
+mini.TextSize = 40
+mini.Position = UDim2.new(0, 44, -1, 27)
+
+mini2.Parent = Frame
+mini2.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+mini2.Size = UDim2.new(0, 45, 0, 28)
+mini2.Text = "+"
+mini2.TextSize = 40
+mini2.Position = UDim2.new(0, 44, -1, 57)
+mini2.Visible = false
+
+-- ========================
+-- SPEED SYSTEM
+-- ========================
+
+local speeds = 1
+local nowe = false
+local player = game.Players.LocalPlayer
+
+local function updateSpeed()
+	local char = player.Character
+	if char then
+		local hum = char:FindFirstChild("Humanoid")
+		if hum then
+			if nowe then
+				hum.WalkSpeed = 16 * speeds
+			else
+				hum.WalkSpeed = 16
+			end
+		end
+	end
+end
+
+onof.MouseButton1Click:Connect(function()
+	nowe = not nowe
+	updateSpeed()
+end)
+
+plus.MouseButton1Click:Connect(function()
+	speeds += 1
+	speed.Text = tostring(speeds)
+	updateSpeed()
+end)
+
+mine.MouseButton1Click:Connect(function()
+	if speeds > 1 then
+		speeds -= 1
+		speed.Text = tostring(speeds)
+		updateSpeed()
+	end
+end)
+
+-- Reset khi respawn
+player.CharacterAdded:Connect(function(char)
+	local hum = char:WaitForChild("Humanoid")
+	hum.WalkSpeed = 16
+end)
+
+-- ========================
+-- UP / DOWN giữ nguyên
+-- ========================
+
+local tis
+up.MouseButton1Down:Connect(function()
+	tis = true
+	while tis do
+		task.wait()
+		player.Character.HumanoidRootPart.CFrame *= CFrame.new(0,1,0)
+	end
+end)
+up.MouseButton1Up:Connect(function()
+	tis = false
+end)
+
+local dis
+down.MouseButton1Down:Connect(function()
+	dis = true
+	while dis do
+		task.wait()
+		player.Character.HumanoidRootPart.CFrame *= CFrame.new(0,-1,0)
+	end
+end)
+down.MouseButton1Up:Connect(function()
+	dis = false
+end)
+
+-- ========================
+-- CLOSE / MINIMIZE
+-- ========================
+
+closebutton.MouseButton1Click:Connect(function()
+	main:Destroy()
+end)
+
+mini.MouseButton1Click:Connect(function()
+	up.Visible = false
+	down.Visible = false
+	onof.Visible = false
+	plus.Visible = false
+	speed.Visible = false
+	mine.Visible = false
+	mini.Visible = false
+	mini2.Visible = true
+	Frame.BackgroundTransparency = 1
+	closebutton.Position = UDim2.new(0, 0, -1, 57)
+end)
+
+mini2.MouseButton1Click:Connect(function()
+	up.Visible = true
+	down.Visible = true
+	onof.Visible = true
+	plus.Visible = true
+	speed.Visible = true
+	mine.Visible = true
+	mini.Visible = true
+	mini2.Visible = false
+	Frame.BackgroundTransparency = 0
+	closebutton.Position = UDim2.new(0, 0, -1, 27)
+end)
