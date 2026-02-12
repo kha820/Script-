@@ -1,0 +1,119 @@
+-- Tạo ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Main Frame
+local Main = Instance.new("Frame")
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 350, 0, 250)
+Main.Position = UDim2.new(0.5, -175, 0.5, -125)
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Main.BackgroundTransparency = 0.2
+Main.Active = true
+Main.Draggable = true
+
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
+
+-- UI Stroke
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Thickness = 1.5
+Stroke.Color = Color3.fromRGB(0, 170, 255)
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Parent = Main
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "Kha Hub"
+Title.TextColor3 = Color3.fromRGB(0, 170, 255)
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+
+-- Toggle Button 1
+local Button1 = Instance.new("TextButton")
+Button1.Parent = Main
+Button1.Size = UDim2.new(0.8, 0, 0, 40)
+Button1.Position = UDim2.new(0.1, 0, 0.3, 0)
+Button1.Text = "Speed Boost: OFF"
+Button1.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Button1.TextColor3 = Color3.new(1,1,1)
+Button1.TextScaled = true
+Button1.Font = Enum.Font.Gotham
+
+Instance.new("UICorner", Button1).CornerRadius = UDim.new(0, 10)
+
+local speedOn = false
+
+Button1.MouseButton1Click:Connect(function()
+	speedOn = not speedOn
+	
+	if speedOn then
+		Button1.Text = "Speed Boost: ON"
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 32
+	else
+		Button1.Text = "Speed Boost: OFF"
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+	end
+end)
+
+-- Toggle Button 2
+local Button2 = Instance.new("TextButton")
+Button2.Parent = Main
+Button2.Size = UDim2.new(0.8, 0, 0, 40)
+Button2.Position = UDim2.new(0.1, 0, 0.55, 0)
+Button2.Text = "Jump Boost: OFF"
+Button2.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Button2.TextColor3 = Color3.new(1,1,1)
+Button2.TextScaled = true
+Button2.Font = Enum.Font.Gotham
+
+Instance.new("UICorner", Button2).CornerRadius = UDim.new(0, 10)
+
+local jumpOn = false
+
+Button2.MouseButton1Click:Connect(function()
+	jumpOn = not jumpOn
+	
+	if jumpOn then
+		Button2.Text = "Jump Boost: ON"
+		game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+	else
+		Button2.Text = "Jump Boost: OFF"
+		game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+	end
+end)
+
+-- Close Button
+local Close = Instance.new("TextButton")
+Close.Parent = Main
+Close.Size = UDim2.new(0, 30, 0, 30)
+Close.Position = UDim2.new(1, -35, 0, 5)
+Close.Text = "X"
+Close.BackgroundColor3 = Color3.fromRGB(200,50,50)
+Close.TextColor3 = Color3.new(1,1,1)
+Close.TextScaled = true
+Close.Font = Enum.Font.GothamBold
+
+Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
+
+Close.MouseButton1Click:Connect(function()
+	Main.Visible = false
+end)
+
+-- Open Button nhỏ
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Parent = ScreenGui
+OpenBtn.Size = UDim2.new(0, 100, 0, 40)
+OpenBtn.Position = UDim2.new(0, 20, 0.5, -20)
+OpenBtn.Text = "OPEN"
+OpenBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
+OpenBtn.TextColor3 = Color3.new(1,1,1)
+OpenBtn.TextScaled = true
+OpenBtn.Font = Enum.Font.GothamBold
+
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 15)
+
+OpenBtn.MouseButton1Click:Connect(function()
+	Main.Visible = true
+end)
