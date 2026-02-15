@@ -1,20 +1,27 @@
--- TP PRO GUI (Minimize Version)
-local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
+-- TP PRO FINAL (All in one)
 
+local player = game.Players.LocalPlayer
+local hrp
 local saved = {}
 local minimized = false
 
+-- Update character (FIX RESPAWN)
+local function updateChar(char)
+    hrp = char:WaitForChild("HumanoidRootPart")
+end
+
+updateChar(player.Character or player.CharacterAdded:Wait())
+player.CharacterAdded:Connect(updateChar)
+
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TP_PRO"
+gui.Name = "TP_PRO_FINAL"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0,200,0,260)
 frame.Position = UDim2.new(0,50,0,200)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-frame.BackgroundTransparency = 0.4
+frame.BackgroundTransparency = 0.35
 frame.Active = true
 frame.Draggable = true
 frame.BorderSizePixel = 0
@@ -31,7 +38,7 @@ title.TextScaled = true
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(0,255,200)
 
--- Minimize button
+-- Minimize
 local mini = Instance.new("TextButton", titleBar)
 mini.Size = UDim2.new(0.15,0,1,0)
 mini.Position = UDim2.new(0.7,0,0,0)
@@ -39,7 +46,7 @@ mini.Text = "➖"
 mini.TextScaled = true
 mini.BackgroundColor3 = Color3.fromRGB(255,200,0)
 
--- Close button
+-- Close
 local close = Instance.new("TextButton", titleBar)
 close.Size = UDim2.new(0.15,0,1,0)
 close.Position = UDim2.new(0.85,0,0,0)
@@ -74,33 +81,34 @@ for i = 1,5 do
     tp.TextScaled = true
 
     set.MouseButton1Click:Connect(function()
-        saved[i] = hrp.CFrame
-        set.Text = "ĐÃ LƯU "..i
-        task.wait(1)
-        set.Text = "SET "..i
+        if hrp then
+            saved[i] = hrp.CFrame
+            set.Text = "ĐÃ LƯU "..i
+            task.wait(1)
+            set.Text = "SET "..i
+        end
     end)
 
     tp.MouseButton1Click:Connect(function()
-        if saved[i] then
+        if saved[i] and hrp then
             hrp.CFrame = saved[i]
         else
-            tp.Text = "CHƯA LƯU!"
+            tp.Text = "LỖI!"
             task.wait(1)
             tp.Text = "TP "..i
         end
     end)
 end
 
--- Thu gọn GUI
+-- Minimize toggle
 mini.MouseButton1Click:Connect(function()
     minimized = not minimized
+    container.Visible = not minimized
 
     if minimized then
-        container.Visible = false
         frame.Size = UDim2.new(0,200,0,30)
         mini.Text = "➕"
     else
-        container.Visible = true
         frame.Size = UDim2.new(0,200,0,260)
         mini.Text = "➖"
     end
