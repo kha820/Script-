@@ -15,7 +15,7 @@ player.CharacterAdded:Connect(updateChar)
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TP_PRO_FINAL"
+gui.Name = "TP_PRO_FINAL_by_kha"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0,200,0,260)
