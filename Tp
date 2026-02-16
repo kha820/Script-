@@ -1,21 +1,20 @@
--- TP PRO FINAL (All in one)
+-- TP PRO FINAL | by Kha
 
 local player = game.Players.LocalPlayer
 local hrp
 local saved = {}
 local minimized = false
 
--- Update character (FIX RESPAWN)
+-- Fix respawn
 local function updateChar(char)
     hrp = char:WaitForChild("HumanoidRootPart")
 end
-
 updateChar(player.Character or player.CharacterAdded:Wait())
 player.CharacterAdded:Connect(updateChar)
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TP_PRO_FINAL"
+gui.Name = "TP_PRO_KHA"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0,200,0,260)
@@ -33,10 +32,10 @@ titleBar.BackgroundTransparency = 1
 
 local title = Instance.new("TextLabel", titleBar)
 title.Size = UDim2.new(0.7,0,1,0)
-title.Text = "TP PRO by kha"
-title.TextScaled = true
 title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(0,255,200)
+title.TextScaled = true
+title.RichText = true
+title.Text = '<font color="#00ffd5">TP PRO</font> <font color="#ffffff">| by Kha</font>'
 
 -- Minimize
 local mini = Instance.new("TextButton", titleBar)
