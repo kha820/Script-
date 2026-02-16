@@ -15,7 +15,7 @@ player.CharacterAdded:Connect(updateChar)
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TP_PRO_FINAL_by_kha"
+gui.Name = "TP_PRO_FINAL"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0,200,0,260)
@@ -33,7 +33,7 @@ titleBar.BackgroundTransparency = 1
 
 local title = Instance.new("TextLabel", titleBar)
 title.Size = UDim2.new(0.7,0,1,0)
-title.Text = "TP PRO"
+title.Text = "TP PRO by kha"
 title.TextScaled = true
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(0,255,200)
