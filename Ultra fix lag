@@ -1,4 +1,4 @@
--- 💀🚀 POTATO + ULTRA MOBILE HYBRID MODE
+-- 💀🚀 HYBRID MODE FIX (NO NOCLIP BUG)
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -7,7 +7,7 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
--- 1. LIGHTING = CỰC THẤP (MOBILE + POTATO)
+-- 1. LIGHTING LOW
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
@@ -21,7 +21,6 @@ end)
 
 for _,v in pairs(Lighting:GetChildren()) do
     if v:IsA("PostEffect")
-    or v:IsA("Sky")
     or v:IsA("Atmosphere")
     or v:IsA("BloomEffect")
     or v:IsA("SunRaysEffect")
@@ -32,7 +31,7 @@ for _,v in pairs(Lighting:GetChildren()) do
 end
 
 ------------------------------------------------
--- 2. WATER = GẦN NHƯ OFF
+-- 2. WATER OFF
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -44,58 +43,45 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. WORLD = POTATO EXTREME SAFE
+-- 3. SAFE OPTIMIZE (KHÔNG PHÁ COLLISION)
 ------------------------------------------------
-local function HybridOptimize(root)
-    for _,v in pairs(root:GetDescendants()) do
+local function SafeOptimize(obj)
 
-        if v:IsA("ParticleEmitter")
-        or v:IsA("Trail")
-        or v:IsA("Smoke")
-        or v:IsA("Fire")
-        or v:IsA("Sparkles")
-        or v:IsA("Beam")
-        or v:IsA("Explosion") then
-            pcall(function()
-                v.Enabled = false
-            end)
+    if obj:IsA("ParticleEmitter")
+    or obj:IsA("Trail")
+    or obj:IsA("Smoke")
+    or obj:IsA("Fire")
+    or obj:IsA("Sparkles")
+    or obj:IsA("Beam")
+    or obj:IsA("Explosion") then
+        obj.Enabled = false
 
-        elseif v:IsA("Decal") or v:IsA("Texture") then
-            pcall(function()
-                v.Transparency = 1
-            end)
+    elseif obj:IsA("Decal") or obj:IsA("Texture") then
+        obj.Transparency = 1
 
-        elseif v:IsA("BasePart") then
-            pcall(function()
-                v.Material = Enum.Material.Plastic
-                v.Reflectance = 0
-                v.CastShadow = false
-            end)
-        end
+    elseif obj:IsA("BasePart") then
+        -- chỉ chỉnh render, KHÔNG đụng collision
+        obj.Material = Enum.Material.Plastic
+        obj.Reflectance = 0
+        obj.CastShadow = false
     end
 end
 
-HybridOptimize(workspace)
+------------------------------------------------
+-- 4. CHẠY 1 LẦN (KHÔNG LOOP)
+------------------------------------------------
+for _,v in pairs(workspace:GetDescendants()) do
+    SafeOptimize(v)
+end
+
+workspace.DescendantAdded:Connect(SafeOptimize)
 
 ------------------------------------------------
--- 4. RENDER = LOWEST EVER (MOBILE)
-------------------------------------------------
-pcall(function()
-    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-    settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level01
-end)
-
-------------------------------------------------
--- 5. CHARACTER = NO EFFECT
+-- 5. CHARACTER
 ------------------------------------------------
 local function HybridChar(char)
     for _,v in pairs(char:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.Material = Enum.Material.Plastic
-            v.CastShadow = false
-        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-            v.Enabled = false
-        end
+        SafeOptimize(v)
     end
 end
 
@@ -105,16 +91,11 @@ end
 player.CharacterAdded:Connect(HybridChar)
 
 ------------------------------------------------
--- 6. AUTO CLEAN (CHỐNG GAME TẠO EFFECT)
+-- 6. LOWEST RENDER
 ------------------------------------------------
-task.spawn(function()
-    while true do
-        task.wait(2)
-        pcall(function()
-            HybridOptimize(workspace)
-        end)
-    end
+pcall(function()
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end)
 
 ------------------------------------------------
-print("💀🚀 HYBRID MODE ENABLED – MAX FPS FOR MOBILE")
+print("💀🚀 HYBRID SAFE MODE ENABLED (NO NOCLIP)")
