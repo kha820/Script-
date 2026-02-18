@@ -1,4 +1,4 @@
--- 💀🚀 HYBRID MODE FIX (NO NOCLIP BUG)
+-- 💀🚀 SAFE HYBRID MODE (ANTI NOCLIP BUG)
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -7,31 +7,29 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
--- 1. LIGHTING LOW
+-- 1. LIGHTING SAFE
 ------------------------------------------------
 pcall(function()
     Lighting.GlobalShadows = false
-    Lighting.Brightness = 0
+    Lighting.Brightness = 1
     Lighting.ClockTime = 12
     Lighting.FogEnd = 9e9
-    Lighting.FogStart = 0
     Lighting.EnvironmentDiffuseScale = 0
     Lighting.EnvironmentSpecularScale = 0
 end)
 
 for _,v in pairs(Lighting:GetChildren()) do
     if v:IsA("PostEffect")
-    or v:IsA("Atmosphere")
     or v:IsA("BloomEffect")
     or v:IsA("SunRaysEffect")
     or v:IsA("ColorCorrectionEffect")
     or v:IsA("DepthOfFieldEffect") then
-        pcall(function() v:Destroy() end)
+        v:Destroy()
     end
 end
 
 ------------------------------------------------
--- 2. WATER OFF
+-- 2. WATER SAFE
 ------------------------------------------------
 pcall(function()
     if Terrain then
@@ -43,59 +41,63 @@ pcall(function()
 end)
 
 ------------------------------------------------
--- 3. SAFE OPTIMIZE (KHÔNG PHÁ COLLISION)
+-- 3. SAFE OPTIMIZE (KHÔNG BUG MAP)
 ------------------------------------------------
-local function SafeOptimize(obj)
+local function SafeOptimize(root)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    if obj:IsA("ParticleEmitter")
-    or obj:IsA("Trail")
-    or obj:IsA("Smoke")
-    or obj:IsA("Fire")
-    or obj:IsA("Sparkles")
-    or obj:IsA("Beam")
-    or obj:IsA("Explosion") then
-        obj.Enabled = false
+    for _,v in pairs(root:GetDescendants()) do
+        if v:IsA("ParticleEmitter")
+        or v:IsA("Trail")
+        or v:IsA("Smoke")
+        or v:IsA("Fire")
+        or v:IsA("Sparkles") then
+            v.Enabled = false
 
-    elseif obj:IsA("Decal") or obj:IsA("Texture") then
-        obj.Transparency = 1
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
 
-    elseif obj:IsA("BasePart") then
-        -- chỉ chỉnh render, KHÔNG đụng collision
-        obj.Material = Enum.Material.Plastic
-        obj.Reflectance = 0
-        obj.CastShadow = false
+        elseif v:IsA("BasePart") then
+            -- ❗ KHÔNG optimize gần player (tránh xuyên tường)
+            if hrp and (v.Position - hrp.Position).Magnitude < 80 then
+                continue
+            end
+
+            v.Material = Enum.Material.Plastic
+            v.CastShadow = false
+        end
     end
 end
 
-------------------------------------------------
--- 4. CHẠY 1 LẦN (KHÔNG LOOP)
-------------------------------------------------
-for _,v in pairs(workspace:GetDescendants()) do
-    SafeOptimize(v)
-end
-
-workspace.DescendantAdded:Connect(SafeOptimize)
+SafeOptimize(workspace)
 
 ------------------------------------------------
--- 5. CHARACTER
+-- 4. RENDER SAFE (KHÔNG ĐỤNG MESH DETAIL)
 ------------------------------------------------
-local function HybridChar(char)
+pcall(function()
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    -- ❌ XÓA MeshPartDetailLevel để tránh bug xuyên map
+end)
+
+------------------------------------------------
+-- 5. CHARACTER SAFE
+------------------------------------------------
+local function SafeChar(char)
     for _,v in pairs(char:GetDescendants()) do
-        SafeOptimize(v)
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.Plastic
+            v.CastShadow = false
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Enabled = false
+        end
     end
 end
 
 if player.Character then
-    HybridChar(player.Character)
+    SafeChar(player.Character)
 end
-player.CharacterAdded:Connect(HybridChar)
+player.CharacterAdded:Connect(SafeChar)
 
 ------------------------------------------------
--- 6. LOWEST RENDER
-------------------------------------------------
-pcall(function()
-    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-end)
-
-------------------------------------------------
-print("💀🚀 HYBRID SAFE MODE ENABLED (NO NOCLIP)")
+print("🚀 SAFE FPS MODE ENABLED (NO XUYÊN TƯỜNG)")
