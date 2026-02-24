@@ -1,10 +1,11 @@
--- TP PRO MAX | by Kha
+-- TP PRO MINI | by Kha (Compact)
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local hrp
 local saved = {}
 local minimized = false
+local listOpen = false
 
 -- Fix respawn
 local function updateChar(char)
@@ -15,94 +16,94 @@ player.CharacterAdded:Connect(updateChar)
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TP_PRO_KHA"
+gui.Name = "TP_PRO_KHA_MINI"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,220,0,340)
-frame.Position = UDim2.new(0,50,0,200)
+frame.Size = UDim2.new(0,190,0,250)
+frame.Position = UDim2.new(0,40,0,200)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 frame.BackgroundTransparency = 0.35
 frame.Active = true
 frame.Draggable = true
 frame.BorderSizePixel = 0
 
--- Title bar
+-- Title
 local titleBar = Instance.new("Frame", frame)
-titleBar.Size = UDim2.new(1,0,0,30)
+titleBar.Size = UDim2.new(1,0,0,28)
 titleBar.BackgroundTransparency = 1
 
 local title = Instance.new("TextLabel", titleBar)
-title.Size = UDim2.new(0.6,0,1,0)
+title.Size = UDim2.new(0.65,0,1,0)
 title.BackgroundTransparency = 1
 title.TextScaled = true
 title.RichText = true
-title.Text = '<font color="#00ffd5">TP PRO</font> <font color="#ffffff">| by Kha</font>'
+title.Text = '<font color="#00ffd5">TP MINI</font> <font color="#ffffff">| Kha</font>'
 
--- Minimize
+-- Buttons
 local mini = Instance.new("TextButton", titleBar)
-mini.Size = UDim2.new(0.2,0,1,0)
-mini.Position = UDim2.new(0.6,0,0,0)
+mini.Size = UDim2.new(0.18,0,1,0)
+mini.Position = UDim2.new(0.65,0,0,0)
 mini.Text = "➖"
 mini.TextScaled = true
 mini.BackgroundColor3 = Color3.fromRGB(255,200,0)
 
--- Close
 local close = Instance.new("TextButton", titleBar)
-close.Size = UDim2.new(0.2,0,1,0)
-close.Position = UDim2.new(0.8,0,0,0)
+close.Size = UDim2.new(0.17,0,1,0)
+close.Position = UDim2.new(0.83,0,0,0)
 close.Text = "X"
 close.TextScaled = true
 close.BackgroundColor3 = Color3.fromRGB(255,80,80)
 
 -- Container
 local container = Instance.new("Frame", frame)
-container.Size = UDim2.new(1,0,1,-30)
-container.Position = UDim2.new(0,0,0,30)
+container.Size = UDim2.new(1,0,1,-28)
+container.Position = UDim2.new(0,0,0,28)
 container.BackgroundTransparency = 1
 
--- ===== TP PLAYER BOX =====
-
+-- === TP PLAYER ===
 local nameBox = Instance.new("TextBox", container)
-nameBox.Size = UDim2.new(0.7,0,0,30)
-nameBox.PlaceholderText = "Nhập tên player..."
-nameBox.Text = ""
+nameBox.Size = UDim2.new(0.65,0,0,28)
+nameBox.PlaceholderText = "Tên player..."
 nameBox.TextScaled = true
 nameBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-nameBox.Position = UDim2.new(0,0,0,0)
 
 local tpBtn = Instance.new("TextButton", container)
-tpBtn.Size = UDim2.new(0.3,0,0,30)
-tpBtn.Position = UDim2.new(0.7,0,0,0)
+tpBtn.Size = UDim2.new(0.35,0,0,28)
+tpBtn.Position = UDim2.new(0.65,0,0,0)
 tpBtn.Text = "TP"
 tpBtn.TextScaled = true
 tpBtn.BackgroundColor3 = Color3.fromRGB(0,255,120)
 
 -- Dropdown button
 local drop = Instance.new("TextButton", container)
-drop.Size = UDim2.new(1,0,0,25)
-drop.Position = UDim2.new(0,0,0,35)
-drop.Text = "▼ Danh sách người chơi"
+drop.Size = UDim2.new(1,0,0,24)
+drop.Position = UDim2.new(0,0,0,32)
+drop.Text = "▼ Player"
 drop.TextScaled = true
 drop.BackgroundColor3 = Color3.fromRGB(60,60,60)
 
+-- Dynamic list container (auto height)
 local listFrame = Instance.new("Frame", container)
-listFrame.Size = UDim2.new(1,0,0,100)
 listFrame.Position = UDim2.new(0,0,0,60)
+listFrame.Size = UDim2.new(1,0,0,0) -- START = 0 HEIGHT
 listFrame.BackgroundTransparency = 1
-listFrame.Visible = false
+listFrame.ClipsDescendants = true
 
 local layout = Instance.new("UIListLayout", listFrame)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Create player button
+-- Refresh player list
 local function refreshList()
     for _,v in pairs(listFrame:GetChildren()) do
         if v:IsA("TextButton") then v:Destroy() end
     end
 
+    local count = 0
     for _,plr in pairs(Players:GetPlayers()) do
         if plr ~= player then
+            count += 1
             local btn = Instance.new("TextButton", listFrame)
-            btn.Size = UDim2.new(1,0,0,25)
+            btn.Size = UDim2.new(1,0,0,22)
             btn.Text = plr.Name
             btn.TextScaled = true
             btn.BackgroundColor3 = Color3.fromRGB(80,80,80)
@@ -114,14 +115,19 @@ local function refreshList()
             end)
         end
     end
+
+    -- Resize list height dynamically
+    listFrame.Size = listOpen and UDim2.new(1,0,0,count*22) or UDim2.new(1,0,0,0)
 end
 
 refreshList()
 Players.PlayerAdded:Connect(refreshList)
 Players.PlayerRemoving:Connect(refreshList)
 
+-- Toggle dropdown
 drop.MouseButton1Click:Connect(function()
-    listFrame.Visible = not listFrame.Visible
+    listOpen = not listOpen
+    refreshList()
 end)
 
 -- TP by name
@@ -134,21 +140,20 @@ tpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ===== SLOT TP =====
-
-local startY = 170
+-- === SLOT TP ===
+local startY = 70
 for i = 1,5 do
-    local y = startY + (i-1)*35
+    local y = startY + (i-1)*30
 
     local set = Instance.new("TextButton", container)
-    set.Size = UDim2.new(0.5,0,0,30)
+    set.Size = UDim2.new(0.5,0,0,26)
     set.Position = UDim2.new(0,0,0,y)
     set.Text = "SET "..i
     set.BackgroundColor3 = Color3.fromRGB(0,170,255)
     set.TextScaled = true
 
     local tp = Instance.new("TextButton", container)
-    tp.Size = UDim2.new(0.5,0,0,30)
+    tp.Size = UDim2.new(0.5,0,0,26)
     tp.Position = UDim2.new(0.5,0,0,y)
     tp.Text = "TP "..i
     tp.BackgroundColor3 = Color3.fromRGB(0,255,120)
@@ -167,7 +172,7 @@ end
 mini.MouseButton1Click:Connect(function()
     minimized = not minimized
     container.Visible = not minimized
-    frame.Size = minimized and UDim2.new(0,220,0,30) or UDim2.new(0,220,0,340)
+    frame.Size = minimized and UDim2.new(0,190,0,28) or UDim2.new(0,190,0,250)
     mini.Text = minimized and "➕" or "➖"
 end)
 
