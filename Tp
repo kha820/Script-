@@ -1,11 +1,9 @@
--- TP PRO MINI | by Kha (Compact)
+-- TP PRO MINI SPLIT | by Kha
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local hrp
 local saved = {}
-local minimized = false
-local listOpen = false
 
 -- Fix respawn
 local function updateChar(char)
@@ -14,12 +12,14 @@ end
 updateChar(player.Character or player.CharacterAdded:Wait())
 player.CharacterAdded:Connect(updateChar)
 
--- GUI
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TP_PRO_KHA_MINI"
+------------------------------------------------
+-- 🧱 GUI 1: TP SLOT (GIỮ NGUYÊN)
+------------------------------------------------
+local gui1 = Instance.new("ScreenGui", game.CoreGui)
+gui1.Name = "TP_SLOT_KHA"
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,190,0,250)
+local frame = Instance.new("Frame", gui1)
+frame.Size = UDim2.new(0,190,0,200)
 frame.Position = UDim2.new(0,40,0,200)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 frame.BackgroundTransparency = 0.35
@@ -27,132 +27,26 @@ frame.Active = true
 frame.Draggable = true
 frame.BorderSizePixel = 0
 
--- Title
-local titleBar = Instance.new("Frame", frame)
-titleBar.Size = UDim2.new(1,0,0,28)
-titleBar.BackgroundTransparency = 1
-
-local title = Instance.new("TextLabel", titleBar)
-title.Size = UDim2.new(0.65,0,1,0)
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,28)
 title.BackgroundTransparency = 1
 title.TextScaled = true
 title.RichText = true
-title.Text = '<font color="#00ffd5">TP MINI</font> <font color="#ffffff">| Kha</font>'
+title.Text = '<font color="#00ffd5">TP SLOT</font> <font color="#ffffff">| Kha</font>'
 
--- Buttons
-local mini = Instance.new("TextButton", titleBar)
-mini.Size = UDim2.new(0.18,0,1,0)
-mini.Position = UDim2.new(0.65,0,0,0)
-mini.Text = "➖"
-mini.TextScaled = true
-mini.BackgroundColor3 = Color3.fromRGB(255,200,0)
-
-local close = Instance.new("TextButton", titleBar)
-close.Size = UDim2.new(0.17,0,1,0)
-close.Position = UDim2.new(0.83,0,0,0)
-close.Text = "X"
-close.TextScaled = true
-close.BackgroundColor3 = Color3.fromRGB(255,80,80)
-
--- Container
-local container = Instance.new("Frame", frame)
-container.Size = UDim2.new(1,0,1,-28)
-container.Position = UDim2.new(0,0,0,28)
-container.BackgroundTransparency = 1
-
--- === TP PLAYER ===
-local nameBox = Instance.new("TextBox", container)
-nameBox.Size = UDim2.new(0.65,0,0,28)
-nameBox.PlaceholderText = "Tên player..."
-nameBox.TextScaled = true
-nameBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-local tpBtn = Instance.new("TextButton", container)
-tpBtn.Size = UDim2.new(0.35,0,0,28)
-tpBtn.Position = UDim2.new(0.65,0,0,0)
-tpBtn.Text = "TP"
-tpBtn.TextScaled = true
-tpBtn.BackgroundColor3 = Color3.fromRGB(0,255,120)
-
--- Dropdown button
-local drop = Instance.new("TextButton", container)
-drop.Size = UDim2.new(1,0,0,24)
-drop.Position = UDim2.new(0,0,0,32)
-drop.Text = "▼ Player"
-drop.TextScaled = true
-drop.BackgroundColor3 = Color3.fromRGB(60,60,60)
-
--- Dynamic list container (auto height)
-local listFrame = Instance.new("Frame", container)
-listFrame.Position = UDim2.new(0,0,0,60)
-listFrame.Size = UDim2.new(1,0,0,0) -- START = 0 HEIGHT
-listFrame.BackgroundTransparency = 1
-listFrame.ClipsDescendants = true
-
-local layout = Instance.new("UIListLayout", listFrame)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- Refresh player list
-local function refreshList()
-    for _,v in pairs(listFrame:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
-    end
-
-    local count = 0
-    for _,plr in pairs(Players:GetPlayers()) do
-        if plr ~= player then
-            count += 1
-            local btn = Instance.new("TextButton", listFrame)
-            btn.Size = UDim2.new(1,0,0,22)
-            btn.Text = plr.Name
-            btn.TextScaled = true
-            btn.BackgroundColor3 = Color3.fromRGB(80,80,80)
-
-            btn.MouseButton1Click:Connect(function()
-                if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                    hrp.CFrame = plr.Character.HumanoidRootPart.CFrame
-                end
-            end)
-        end
-    end
-
-    -- Resize list height dynamically
-    listFrame.Size = listOpen and UDim2.new(1,0,0,count*22) or UDim2.new(1,0,0,0)
-end
-
-refreshList()
-Players.PlayerAdded:Connect(refreshList)
-Players.PlayerRemoving:Connect(refreshList)
-
--- Toggle dropdown
-drop.MouseButton1Click:Connect(function()
-    listOpen = not listOpen
-    refreshList()
-end)
-
--- TP by name
-tpBtn.MouseButton1Click:Connect(function()
-    local target = Players:FindFirstChild(nameBox.Text)
-    if target and target ~= player then
-        if target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            hrp.CFrame = target.Character.HumanoidRootPart.CFrame
-        end
-    end
-end)
-
--- === SLOT TP ===
-local startY = 70
+-- SLOT
+local startY = 35
 for i = 1,5 do
     local y = startY + (i-1)*30
 
-    local set = Instance.new("TextButton", container)
+    local set = Instance.new("TextButton", frame)
     set.Size = UDim2.new(0.5,0,0,26)
     set.Position = UDim2.new(0,0,0,y)
     set.Text = "SET "..i
     set.BackgroundColor3 = Color3.fromRGB(0,170,255)
     set.TextScaled = true
 
-    local tp = Instance.new("TextButton", container)
+    local tp = Instance.new("TextButton", frame)
     tp.Size = UDim2.new(0.5,0,0,26)
     tp.Position = UDim2.new(0.5,0,0,y)
     tp.Text = "TP "..i
@@ -168,15 +62,101 @@ for i = 1,5 do
     end)
 end
 
--- Minimize
-mini.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    container.Visible = not minimized
-    frame.Size = minimized and UDim2.new(0,190,0,28) or UDim2.new(0,190,0,250)
-    mini.Text = minimized and "➕" or "➖"
+------------------------------------------------
+-- 🧍 GUI 2: TP PLAYER FLOAT
+------------------------------------------------
+local gui2 = Instance.new("ScreenGui", game.CoreGui)
+gui2.Name = "TP_PLAYER_KHA"
+
+local float = Instance.new("Frame", gui2)
+float.Size = UDim2.new(0,170,0,150)
+float.Position = UDim2.new(0.4,0,0.2,0)
+float.BackgroundColor3 = Color3.fromRGB(20,20,20)
+float.BackgroundTransparency = 0.3
+float.Active = true
+float.Draggable = true
+float.BorderSizePixel = 0
+
+local title2 = Instance.new("TextLabel", float)
+title2.Size = UDim2.new(1,0,0,25)
+title2.BackgroundTransparency = 1
+title2.TextScaled = true
+title2.RichText = true
+title2.Text = '<font color="#00ffae">TP PLAYER</font>'
+
+local nameBox = Instance.new("TextBox", float)
+nameBox.Size = UDim2.new(1,-10,0,26)
+nameBox.Position = UDim2.new(0,5,0,30)
+nameBox.PlaceholderText = "Tên player..."
+nameBox.TextScaled = true
+nameBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+local tpBtn = Instance.new("TextButton", float)
+tpBtn.Size = UDim2.new(1,-10,0,26)
+tpBtn.Position = UDim2.new(0,5,0,60)
+tpBtn.Text = "TP"
+tpBtn.TextScaled = true
+tpBtn.BackgroundColor3 = Color3.fromRGB(0,255,120)
+
+-- Player list toggle
+local drop = Instance.new("TextButton", float)
+drop.Size = UDim2.new(1,-10,0,24)
+drop.Position = UDim2.new(0,5,0,90)
+drop.Text = "▼ Player"
+drop.TextScaled = true
+drop.BackgroundColor3 = Color3.fromRGB(70,70,70)
+
+local list = Instance.new("ScrollingFrame", float)
+list.Size = UDim2.new(1,-10,0,0) -- start hidden
+list.Position = UDim2.new(0,5,0,115)
+list.CanvasSize = UDim2.new(0,0,0,0)
+list.ScrollBarThickness = 4
+list.BackgroundTransparency = 1
+list.Visible = false
+
+local layout = Instance.new("UIListLayout", list)
+
+local open = false
+
+local function refresh()
+    for _,v in pairs(list:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+
+    local count = 0
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr ~= player then
+            count += 1
+            local b = Instance.new("TextButton", list)
+            b.Size = UDim2.new(1,0,0,22)
+            b.Text = plr.Name
+            b.TextScaled = true
+            b.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+            b.MouseButton1Click:Connect(function()
+                if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and hrp then
+                    hrp.CFrame = plr.Character.HumanoidRootPart.CFrame
+                end
+            end)
+        end
+    end
+
+    list.CanvasSize = UDim2.new(0,0,0,count*24)
+end
+
+refresh()
+Players.PlayerAdded:Connect(refresh)
+Players.PlayerRemoving:Connect(refresh)
+
+drop.MouseButton1Click:Connect(function()
+    open = not open
+    list.Visible = open
+    list.Size = open and UDim2.new(1,-10,0,70) or UDim2.new(1,-10,0,0)
 end)
 
--- Close
-close.MouseButton1Click:Connect(function()
-    gui:Destroy()
+tpBtn.MouseButton1Click:Connect(function()
+    local target = Players:FindFirstChild(nameBox.Text)
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and hrp then
+        hrp.CFrame = target.Character.HumanoidRootPart.CFrame
+    end
 end)
